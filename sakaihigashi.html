@@ -74,6 +74,53 @@
     }
   </style>
 </head>
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCKGPFyyTFec_OOfKkX_e2xqxC2LzrNRIQ",
+  authDomain: "zaikokannri-sakaihigashi.firebaseapp.com",
+  databaseURL: "https://zaikokannri-sakaihigashi-default-rtdb.firebaseio.com",
+  projectId: "zaikokannri-sakaihigashi",
+  storageBucket: "zaikokannri-sakaihigashi.firebasestorage.app",
+  messagingSenderId: "92310858947",
+  appId: "1:92310858947:web:fd3d6e1e537db7c2608676",
+  measurementId: "G-W7QE5LYW06"
+};
+  ...
+<script>
+    // Firebaseの設定コード
+    const firebaseConfig = {
+      apiKey: "...",
+      authDomain: "...",
+      databaseURL: "...",
+      projectId: "...",
+      storageBucket: "...",
+      messagingSenderId: "...",
+      appId: "...",
+      measurementId: "..."
+    };
+
+    // Firebaseの初期化
+    firebase.initializeApp(firebaseConfig);
+
+    // データベースの参照を取得
+    const database = firebase.database();
+</script>
+<script>
+    // ページを開いたときに実行される処理
+    document.addEventListener('DOMContentLoaded', (event) => {
+        // ここにデータの読み込みコードを記述
+        // 例: 'sakaihigashi'というパスからデータを読み込む場合
+        database.ref('sakaihigashi').on('value', (snapshot) => {
+            const data = snapshot.val();
+            console.log(data); // データをコンソールに表示
+
+            // ここに、取得したデータをHTMLの要素に反映させるコードを記述します。
+            // 例: `document.getElementById('display-area').textContent = JSON.stringify(data, null, 2);`
+        });
+    });
+</script>
+</body>
+</html>
 <body>
 
   <h1>在庫・店舗使用数 管理システム（部門別）</h1>
@@ -250,3 +297,4 @@
 
 </body>
 </html>
+
