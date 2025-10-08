@@ -86,41 +86,43 @@
     <input type="text" id="itemName" placeholder="商品名" aria-label="商品名" />
     <input type="number" id="warehouseStock" placeholder="倉庫在庫" min="0" step="50" aria-label="倉庫在庫" />
     <input type="number" id="storeUsed" placeholder="店舗使用数" min="0" step="1" aria-label="店舗使用数" />
-    <button id="addButton" onclick="addItem()">追加</button>
+    <button id="addButton">追加</button>
   </div>
 
   <div id="tablesArea"></div>
 
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-database.js"></script>
+
   <script>
-    // 初期データを定義
-    const initialInventory = [
-      { department: "パック", name: "たこ焼き6パック", warehouse: 300, used: 55 },
-      { department: "パック", name: "たこ焼き9パック", warehouse: 250, used: 82 },
-      { department: "パック", name: "たこ焼き12パック", warehouse: 200, used: 40 },
-      { department: "パック", name: "たこ焼き15パック", warehouse: 150, used: 30 },
-      { department: "パック", name: "お好み焼きパック", warehouse: 200, used: 90 },
-      { department: "パック", name: "焼きそば並パック", warehouse: 400, used: 200 },
-      { department: "パック", name: "焼きそば大パック", warehouse: 300, used: 150 },
-      { department: "パック", name: "アウトレットたこ焼き", warehouse: 100, used: 30 },
-      { department: "パック", name: "アウトレットお好み焼き", warehouse: 120, used: 40 },
-      { department: "パック", name: "ジャン袋", warehouse: 50, used: 20 },
-      { department: "パック", name: "総菜パック", warehouse: 70, used: 60 },
-      { department: "食材", name: "麺", warehouse: 100, used: 200 },
-      { department: "食材", name: "豚", warehouse: 40, used: 180 },
-      { department: "食材", name: "タコ", warehouse: 30, used: 120 },
-      { department: "食材", name: "イカ", warehouse: 20, used: 140 },
-      { department: "食材", name: "ミックス粉", warehouse: 101, used: 20 },
-      { department: "食材", name: "米", warehouse: 15, used: 5 }
-    ];
+    // ここにあなたのFirebase設定を貼り付けてください
+    const firebaseConfig = {
+      apiKey: "AIzaSyC...",
+      authDomain: "zaikokannri-sakaihigashi.firebaseapp.com",
+      databaseURL: "https://zaikokannri-sakaihigashi-default-rtdb.firebaseio.com",
+      projectId: "zaikokannri-sakaihigashi",
+      storageBucket: "zaikokannri-sakaihigashi.appspot.com",
+      messagingSenderId: "92310858947",
+      appId: "1:92310858947:web:f6d6e1e537d87c2608676",
+      measurementId: "G-W7QESLYW06"
+    };
 
-    // localStorageからデータを読み込む、データがなければ初期データを使用する
-    let inventory = JSON.parse(localStorage.getItem('inventoryData')) || initialInventory;
+    // Firebaseを初期化
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const inventoryRef = database.ref('sakaihigashi'); // データを保存するパスを設定
 
-    // 変更があった場合にlocalStorageに保存する関数
-    function saveInventory() {
-      localStorage.setItem('inventoryData', JSON.stringify(inventory));
-    }
+    // データベースからデータを読み込んでテーブルをレンダリング
+    inventoryRef.on('value', (snapshot) => {
+        const firebaseData = snapshot.val() || {};
+        const inventory = Object.keys(firebaseData).map(key => ({
+            key: key,
+            ...firebaseData[key]
+        }));
+        renderTables(inventory);
+    });
 
+    // データをFirebaseに保存する関数
     function addItem() {
       const department = document.getElementById("departmentSelect").value;
       const name = document.getElementById("itemName").value.trim();
@@ -140,53 +142,42 @@
         return;
       }
 
-      const exists = inventory.find(item => item.department === department && item.name === name);
-      if (exists) {
-        alert("同じ部門に同じ商品名が既に存在します。テーブルで編集してください。");
-        return;
-      }
+      // 新しいデータをFirebaseにpush（追加）
+      inventoryRef.push({ department, name, warehouse, used });
 
-      inventory.push({ department, name, warehouse, used });
-      saveInventory(); // データを保存
-      renderTables();
-
+      // 入力欄をクリア
       document.getElementById("itemName").value = "";
       document.getElementById("warehouseStock").value = "";
       document.getElementById("storeUsed").value = "";
       document.getElementById("itemName").focus();
     }
 
-    function updateValue(index, field, value) {
+    // データを更新する関数
+    function updateValue(key, field, value) {
       const num = parseFloat(value);
       if (!isNaN(num) && num >= 0) {
-        inventory[index][field] = num;
-        saveInventory(); // データを保存
-        renderTables();
+        inventoryRef.child(key).update({ [field]: num });
       } else {
         alert("0以上の数値を入力してください。");
-        // 無効な入力があった場合、元の値に戻すために再レンダリング
-        renderTables();
       }
     }
 
-    function removeItem(index) {
+    // データを削除する関数
+    function removeItem(key) {
       if (confirm("この商品を削除しますか？")) {
-        inventory.splice(index, 1);
-        saveInventory(); // データを保存
-        renderTables();
+        inventoryRef.child(key).remove();
       }
     }
 
-    function renderTables() {
+    // テーブルをレンダリングする関数
+    function renderTables(inventory) {
       const container = document.getElementById("tablesArea");
       container.innerHTML = "";
 
       const departments = [...new Set(inventory.map(item => item.department))];
 
       departments.forEach(dept => {
-        const deptItems = inventory
-          .map((item, idx) => ({ ...item, idx }))
-          .filter(item => item.department === dept);
+        const deptItems = inventory.filter(item => item.department === dept);
 
         const h2 = document.createElement("h2");
         h2.textContent = dept;
@@ -218,10 +209,10 @@
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${item.name}</td>
-            <td><input type="number" min="0" step="${warehouseStep}" value="${item.warehouse}" onchange="updateValue(${item.idx}, 'warehouse', this.value)"></td>
-            <td><input type="number" min="0" step="${usedStep}" value="${item.used}" onchange="updateValue(${item.idx}, 'used', this.value)"></td>
+            <td><input type="number" min="0" step="${warehouseStep}" value="${item.warehouse}" onchange="updateValue('${item.key}', 'warehouse', this.value)"></td>
+            <td><input type="number" min="0" step="${usedStep}" value="${item.used}" onchange="updateValue('${item.key}', 'used', this.value)"></td>
             <td>${formattedRemaining}</td>
-            <td><button onclick="removeItem(${item.idx})">削除</button></td>
+            <td><button onclick="removeItem('${item.key}')">削除</button></td>
           `;
           tbody.appendChild(tr);
         });
@@ -232,8 +223,8 @@
       });
     }
 
-    renderTables();
-
+    // イベントリスナーの再設定
+    document.getElementById("addButton").addEventListener("click", addItem);
     document.getElementById("departmentSelect").addEventListener("keydown", e => {
       if (e.key === "Enter") document.getElementById("itemName").focus();
     });
