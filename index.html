@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>次在庫表（Firebase）</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: sans-serif;
+      margin: 10px;
+      color: #222;
+      background: #fff;
+      font-size: 16px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-size: 22px;
+    }
+
+    .top-fields,
+    .sheet-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input,
+    select,
+    button {
+      font: inherit;
+    }
+
+    .top-fields input,
+    select,
+    button {
+      min-height: 42px;
+      border: 1px solid #999;
+      border-radius: 4px;
+      background: #fff;
+      padding: 8px 10px;
+    }
+
+    .top-fields input {
+      width: 170px;
+      margin-left: 4px;
+    }
+
+    select {
+      min-width: 220px;
+    }
+
+    button {
+      cursor: pointer;
+      background: #f5f5f5;
+    }
+
+    button:hover {
+      background: #e8e8e8;
+    }
+
+    button:disabled {
+      color: #aaa;
+      cursor: default;
+    }
+
+    .sync-status {
+      margin-left: auto;
+      color: #666;
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .sync-status.online {
+      color: #18794e;
+    }
+
+    .sync-status.saving {
+      color: #9a6700;
+    }
+
+    .sync-status.error {
+      color: #b42318;
+    }
+
+    .sheet-title {
+      margin: 18px 0 8px;
+      font-size: 20px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid #aaa;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 760px;
+    }
+
+    th,
+    td {
+      border: 1px solid #aaa;
+      padding: 7px;
+      text-align: center;
+    }
+
+    th {
+      background: #f2f2f2;
+      white-space: nowrap;
+    }
+
+    td.category {
+      width: 110px;
+      font-weight: bold;
+      background: #fafafa;
+    }
+
+    td.name {
+      min-width: 230px;
+      text-align: left;
+    }
+
+    td.unit {
+      width: 60px;
+    }
+
+    td input[type="number"] {
+      width: 72px;
+      padding: 7px 4px;
+      border: 1px solid #999;
+      border-radius: 3px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    td.total {
+      min-width: 75px;
+      font-weight: bold;
+      background: #fafafa;
+    }
+
+    tr.group-start td {
+      border-top-width: 3px;
+    }
+
+    .bottom-buttons {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .bottom-buttons button {
+      flex: 1;
+      max-width: 180px;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: #666;
+      font-size: 13px;
+    }
+
+    .error-box {
+      display: none;
+      margin: 10px 0;
+      border: 1px solid #e0a29a;
+      border-radius: 4px;
+      padding: 10px;
+      background: #fff4f2;
+      color: #8f2018;
+      white-space: pre-wrap;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        margin: 8px;
+        font-size: 15px;
+      }
+
+      h1 {
+        font-size: 20px;
+      }
+
+      .top-fields {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .top-fields label {
+        display: grid;
+        grid-template-columns: 65px 1fr;
+        align-items: center;
+      }
+
+      .top-fields input {
+        width: 100%;
+        margin-left: 0;
+      }
+
+      .sheet-controls {
+        display: grid;
+        grid-template-columns: 1fr auto;
+      }
+
+      select {
+        min-width: 0;
+        width: 100%;
+      }
+
+      .sync-status {
+        grid-column: 1 / -1;
+        margin-left: 0;
+      }
+
+      th,
+      td {
+        padding: 6px;
+        font-size: 14px;
+      }
+
+      td input[type="number"] {
+        width: 62px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>次在庫表（棚卸し）</h1>
+
+  <div class="top-fields">
+    <label>
+      店舗名
+      <input id="storeName" type="text" placeholder="店舗名">
+    </label>
+
+    <label>
+      対象月
+      <input id="targetMonth" type="month">
+    </label>
+  </div>
+
+  <div class="sheet-controls">
+    <select id="sheetSelect" aria-label="シート選択"></select>
+    <button id="resetButton" type="button">このシートを消去</button>
+    <span id="syncStatus" class="sync-status">Firebase接続中…</span>
+  </div>
+
+  <div id="errorBox" class="error-box"></div>
+
+  <h2 id="sheetTitle" class="sheet-title"></h2>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>分類</th>
+          <th>商品名</th>
+          <th>単位</th>
+          <th>在庫数①</th>
+          <th>在庫数②</th>
+          <th>在庫数③</th>
+          <th>合計</th>
+        </tr>
+      </thead>
+      <tbody id="inventoryBody"></tbody>
+    </table>
+  </div>
+
+  <div class="bottom-buttons">
+    <button id="prevButton" type="button">← 前のシート</button>
+    <button id="nextButton" type="button">次のシート →</button>
+  </div>
+
+  <p class="note">
+    同じ店舗名・同じ対象月を選んだ端末間で、入力内容がリアルタイムに共有されます。
+  </p>
+
+  <script type="module">
+    import { initializeApp } from
+      "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+
+    import {
+      getDatabase,
+      ref,
+      onValue,
+      set,
+      update,
+      serverTimestamp
+    } from
+      "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+    const DATA = {"pages": [{"id": "sheet1", "name": "DA・野菜", "fullName": "1ページ目_DA・野菜", "items": [{"id": "s1r3", "category": "DAアイテム", "name": "おこたこミックス", "unit": "kg"}, {"id": "s1r4", "category": "DAアイテム", "name": "DAお好みソース", "unit": "本"}, {"id": "s1r5", "category": "DAアイテム", "name": "DA焼きそばソース", "unit": "本"}, {"id": "s1r6", "category": "DAアイテム", "name": "DAマヨネーズ", "unit": "本"}, {"id": "s1r7", "category": "DAアイテム", "name": "DA紅生姜みじん切り", "unit": "袋"}, {"id": "s1r8", "category": "DAアイテム", "name": "DAかつお", "unit": "袋"}, {"id": "s1r9", "category": "DAアイテム", "name": "DA天かす", "unit": "kg"}, {"id": "s1r10", "category": "DAアイテム", "name": "DA輪ゴム", "unit": "袋"}, {"id": "s1r11", "category": "DAアイテム", "name": "DAラード15kg", "unit": "缶"}, {"id": "s1r12", "category": "DAアイテム", "name": "DA J 炒め油 15kg", "unit": "缶"}, {"id": "s1r13", "category": "DAアイテム", "name": "お好みパック", "unit": "枚"}, {"id": "s1r14", "category": "DAアイテム", "name": "15パック", "unit": "枚"}, {"id": "s1r15", "category": "DAアイテム", "name": "12パック", "unit": "枚"}, {"id": "s1r16", "category": "DAアイテム", "name": "9パック", "unit": "枚"}, {"id": "s1r17", "category": "DAアイテム", "name": "6パック", "unit": "枚"}, {"id": "s1r18", "category": "DAアイテム", "name": "焼そば 大パック", "unit": "枚"}, {"id": "s1r19", "category": "DAアイテム", "name": "焼そば 並パック", "unit": "枚"}, {"id": "s1r20", "category": "DAアイテム", "name": "惣菜パック", "unit": "枚"}, {"id": "s1r21", "category": "DAアイテム", "name": "キャリーバッグ 大", "unit": "袋"}, {"id": "s1r22", "category": "DAアイテム", "name": "キャリーバッグ 小", "unit": "袋"}, {"id": "s1r23", "category": "DAアイテム", "name": "爪楊枝 6cm", "unit": "cs"}, {"id": "s1r24", "category": "DAアイテム", "name": "アウトレットおこのみパック 本体", "unit": "枚"}, {"id": "s1r25", "category": "DAアイテム", "name": "アウトレットおこのみパック 蓋", "unit": "枚"}, {"id": "s1r26", "category": "DAアイテム", "name": "アウトレット たこ焼きパック", "unit": "枚"}, {"id": "s1r27", "category": "野菜", "name": "キャベツ", "unit": "kg"}, {"id": "s1r28", "category": "野菜", "name": "たまねぎ", "unit": "kg"}, {"id": "s1r29", "category": "野菜", "name": "ネギ(5mm)", "unit": "袋"}, {"id": "s1r30", "category": "野菜", "name": "きゅうり", "unit": "本"}, {"id": "s1r31", "category": "野菜", "name": "もやし", "unit": "袋"}, {"id": "s1r32", "category": "野菜", "name": "長いも", "unit": "kg"}, {"id": "s1r33", "category": "野菜", "name": "トマト", "unit": "個"}, {"id": "s1r34", "category": "野菜", "name": "完封箸", "unit": "袋"}]}, {"id": "sheet2", "name": "冷凍・スピード", "fullName": "2ページ目_冷凍・スピード", "items": [{"id": "s2r3", "category": "冷凍食品", "name": "イズックス 塩味枝豆", "unit": "袋"}, {"id": "s2r4", "category": "冷凍食品", "name": "冷凍アスパラ 500g", "unit": "袋"}, {"id": "s2r5", "category": "冷凍食品", "name": "ベビーホタテM", "unit": "袋"}, {"id": "s2r6", "category": "冷凍食品", "name": "くんちゃまベーコン", "unit": "袋"}, {"id": "s2r7", "category": "冷凍食品", "name": "シュレッドチーズ", "unit": "kg"}, {"id": "s2r8", "category": "冷凍食品", "name": "切りイカ耳", "unit": "kg"}, {"id": "s2r9", "category": "冷凍食品", "name": "キムチ 500g x 10P", "unit": "pc"}, {"id": "s2r10", "category": "冷凍食品", "name": "鮭フレーク500g", "unit": "pc"}, {"id": "s2r11", "category": "冷凍食品", "name": "冷凍かまぼこ220g", "unit": "pc"}, {"id": "s2r12", "category": "冷凍食品", "name": "ロングウインナー", "unit": "本"}, {"id": "s2r13", "category": "冷凍食品", "name": "冷凍ちくわ5本入り", "unit": "本"}, {"id": "s2r14", "category": "冷凍食品", "name": "チーズジャガモチ", "unit": "個"}, {"id": "s2r15", "category": "冷凍食品", "name": "厳選ぎょうざ", "unit": "個"}, {"id": "s2r16", "category": "冷凍食品", "name": "チーズ春巻き", "unit": "個"}, {"id": "s2r17", "category": "冷凍食品", "name": "かにクリームコロッケ", "unit": "個"}, {"id": "s2r18", "category": "冷凍食品", "name": "ハムカツ 40g 20個入り", "unit": "個"}, {"id": "s2r19", "category": "冷凍食品", "name": "唐っと甘エビ1kg", "unit": "袋"}, {"id": "s2r20", "category": "冷凍食品", "name": "むきにんにく1kg", "unit": "袋"}, {"id": "s2r21", "category": "冷凍食品", "name": "なんこつ唐揚げ 600g (10袋入り)", "unit": "袋"}, {"id": "s2r22", "category": "冷凍食品", "name": "ポテトフライ 2kg", "unit": "袋"}, {"id": "s2r23", "category": "冷凍食品", "name": "スパイシーパウダー270g", "unit": "袋"}, {"id": "s2r24", "category": "冷凍食品", "name": "揚げだし豆腐20個", "unit": "個"}, {"id": "s2r25", "category": "冷凍食品", "name": "鶏ハラミ", "unit": "kg"}, {"id": "s2r26", "category": "冷凍食品", "name": "ごぼうスティック500g", "unit": "袋"}, {"id": "s2r27", "category": "スピード", "name": "らっきょう", "unit": "袋"}, {"id": "s2r28", "category": "スピード", "name": "ミックスナッツ", "unit": "缶"}, {"id": "s2r29", "category": "スピード", "name": "熟成チーズ", "unit": "パック"}, {"id": "s2r30", "category": "スピード", "name": "たこわさ", "unit": "パック"}, {"id": "s2r31", "category": "スピード", "name": "中華風くらげ", "unit": "パック"}, {"id": "s2r32", "category": "スピード", "name": "焼きそば麺 (50)", "unit": "袋"}, {"id": "s2r33", "category": "スピード", "name": "冷凍 豚バラスライス 2mm", "unit": "kg"}, {"id": "s2r34", "category": "スピード", "name": "鶏ももカット肉 から揚げ用", "unit": "kg"}, {"id": "s2r35", "category": "スピード", "name": "鶏皮", "unit": "kg"}, {"id": "s2r36", "category": "スピード", "name": "赤イカ短冊", "unit": "kg"}, {"id": "s2r37", "category": "スピード", "name": "切りタコ 2-3g 12kg入り", "unit": "kg"}]}, {"id": "sheet3", "name": "その他・調味料", "fullName": "3ページ目_その他・調味料", "items": [{"id": "s3r3", "category": "その他", "name": "わさび小袋2.5g", "unit": "袋"}, {"id": "s3r4", "category": "その他", "name": "梅干し 1kg", "unit": "kg"}, {"id": "s3r5", "category": "その他", "name": "無塩バター", "unit": "個"}, {"id": "s3r6", "category": "その他", "name": "ホールコーン 4号缶", "unit": "缶"}, {"id": "s3r7", "category": "その他", "name": "塩こんぶ 500g", "unit": "袋"}, {"id": "s3r8", "category": "その他", "name": "薄力粉1kg", "unit": "袋"}, {"id": "s3r9", "category": "その他", "name": "天ぷら粉 2kg", "unit": "袋"}, {"id": "s3r10", "category": "その他", "name": "ソフトさきいか 1kg", "unit": "袋"}, {"id": "s3r11", "category": "その他", "name": "きざみのり100g", "unit": "袋"}, {"id": "s3r12", "category": "その他", "name": "一味唐辛子 300g", "unit": "袋"}, {"id": "s3r13", "category": "その他", "name": "ライスクックチャーハン用500g", "unit": "袋"}, {"id": "s3r14", "category": "その他", "name": "永谷園 お茶漬け海苔", "unit": "食分"}, {"id": "s3r15", "category": "その他", "name": "生みそ汁わかめ 100食", "unit": "食分"}, {"id": "s3r16", "category": "その他", "name": "DAポン酢 ※小さい小袋を数える", "unit": "袋"}, {"id": "s3r17", "category": "その他", "name": "DA青さ", "unit": "袋"}, {"id": "s3r18", "category": "その他", "name": "DA浜御塩焼塩", "unit": "袋"}, {"id": "s3r19", "category": "その他", "name": "DA浅漬けの素500g", "unit": "袋"}, {"id": "s3r20", "category": "その他", "name": "DAピリ辛きゅうりの素500g", "unit": "袋"}, {"id": "s3r21", "category": "その他", "name": "DAから揚げの素2kg", "unit": "袋"}, {"id": "s3r22", "category": "その他", "name": "無洗米1.4kg", "unit": "袋"}, {"id": "s3r23", "category": "その他", "name": "卵 Mサイズ", "unit": "cs"}, {"id": "s3r24", "category": "調味料", "name": "塩コショウ", "unit": "個"}, {"id": "s3r25", "category": "調味料", "name": "ケチャップ 1kg", "unit": "本"}, {"id": "s3r26", "category": "調味料", "name": "ミツカン ユズポン 1.8L", "unit": "本"}, {"id": "s3r27", "category": "調味料", "name": "サラダ油 16.5kg", "unit": "缶"}, {"id": "s3r28", "category": "調味料", "name": "キャノーラ油8kg", "unit": "箱"}, {"id": "s3r29", "category": "調味料", "name": "(JFD)純正ごま油 1.5kg", "unit": "本"}, {"id": "s3r30", "category": "調味料", "name": "ぎょうざたれ 1.8L", "unit": "本"}, {"id": "s3r31", "category": "調味料", "name": "ウスターソース", "unit": "本"}, {"id": "s3r32", "category": "調味料", "name": "東丸 淡口醤油 ペット", "unit": "本"}, {"id": "s3r33", "category": "調味料", "name": "DA濃口醤油 1.8L", "unit": "本"}, {"id": "s3r34", "category": "調味料", "name": "DA塩だれ", "unit": "本"}, {"id": "s3r35", "category": "調味料", "name": "DAほんだし", "unit": "袋"}, {"id": "s3r36", "category": "調味料", "name": "めんつゆ1.8L", "unit": "本"}, {"id": "s3r37", "category": "調味料", "name": "明太ソース500g", "unit": "本"}, {"id": "s3r38", "category": "調味料", "name": "みそ 1kgx10(スープジャーでやっている店舗)", "unit": "pc"}, {"id": "s3r39", "category": "調味料", "name": "ラード1kg", "unit": "kg"}]}, {"id": "sheet4", "name": "ドリンク", "fullName": "4ページ目_ドリンク", "items": [{"id": "s4r3", "category": "ドリンク", "name": "アサヒ スーパードライ生樽19L", "unit": "本"}, {"id": "s4r4", "category": "ドリンク", "name": "代替品 サントリー生 20L", "unit": "本"}, {"id": "s4r5", "category": "ドリンク", "name": "ガスボンベ 5kg", "unit": "本"}, {"id": "s4r6", "category": "ドリンク", "name": "カルピス L パック", "unit": "本"}, {"id": "s4r7", "category": "ドリンク", "name": "アサヒ グレープフルーツ シロップ", "unit": "本"}, {"id": "s4r8", "category": "ドリンク", "name": "代替品 キャプテン グレープフルーツ", "unit": "本"}, {"id": "s4r9", "category": "ドリンク", "name": "アサヒ レモンシロップ", "unit": "本"}, {"id": "s4r10", "category": "ドリンク", "name": "代替品 サントリー カクテルレモン", "unit": "本"}, {"id": "s4r11", "category": "ドリンク", "name": "アサヒ ライムシロップ", "unit": "本"}, {"id": "s4r12", "category": "ドリンク", "name": "代替品 キャプテン ライム", "unit": "本"}, {"id": "s4r13", "category": "ドリンク", "name": "アサヒ シークァーサーシロップ", "unit": "本"}, {"id": "s4r14", "category": "ドリンク", "name": "代替品 キャプテン シークワーサー", "unit": "本"}, {"id": "s4r15", "category": "ドリンク", "name": "ニッカ ゆずれもんはちみつ酒", "unit": "本"}, {"id": "s4r16", "category": "ドリンク", "name": "コーラシロップ", "unit": "本"}, {"id": "s4r17", "category": "ドリンク", "name": "ジンジャーエード", "unit": "本"}, {"id": "s4r18", "category": "ドリンク", "name": "ブラックニッカ 4L", "unit": "本"}, {"id": "s4r19", "category": "ドリンク", "name": "アサヒ 濃醇梅酒 瓶 1.8L", "unit": "本"}, {"id": "s4r20", "category": "ドリンク", "name": "代替品 メルシャン濃厚梅酒1.8L", "unit": "本"}, {"id": "s4r21", "category": "ドリンク", "name": "アサヒ 酎五郎", "unit": "本"}, {"id": "s4r22", "category": "ドリンク", "name": "麦焼酎 二階堂", "unit": "本"}, {"id": "s4r23", "category": "ドリンク", "name": "芋焼酎 黒霧島", "unit": "本"}, {"id": "s4r24", "category": "ドリンク", "name": "いいちこ", "unit": "本"}, {"id": "s4r25", "category": "ドリンク", "name": "黄桜 金印", "unit": "本"}, {"id": "s4r26", "category": "ドリンク", "name": "本格芋焼酎 金黒 1.8L瓶", "unit": "本"}, {"id": "s4r27", "category": "ドリンク", "name": "純水みかん", "unit": "本"}, {"id": "s4r28", "category": "ドリンク", "name": "ウーロン茶", "unit": "本"}, {"id": "s4r29", "category": "ドリンク", "name": "ウーロン茶パック", "unit": "袋"}, {"id": "s4r30", "category": "ドリンク", "name": "コカコーラ 250ml缶", "unit": "本"}, {"id": "s4r31", "category": "ドリンク", "name": "黒生 334ml", "unit": "本"}, {"id": "s4r32", "category": "ドリンク", "name": "サントリー 角 5L", "unit": "本"}, {"id": "s4r33", "category": "ドリンク", "name": "ウィルキンソンジン1.8L", "unit": "本"}, {"id": "s4r34", "category": "ドリンク", "name": "代替品 サントリードライジン1.8L", "unit": "本"}, {"id": "s4r35", "category": "ドリンク", "name": "アサヒゼロ 334ml", "unit": "本"}, {"id": "s4r36", "category": "ドリンク", "name": "代替品 オールフリー334ml", "unit": "本"}]}]};
+
+    /*
+      以前の在庫アプリで使用していたFirebaseプロジェクトを利用します。
+      Realtime Databaseのみを使うため、apiKeyは必須ではありません。
+    */
+    const firebaseConfig = {
+      authDomain: "zaikokannri-sakaihigashi.firebaseapp.com",
+      databaseURL:
+        "https://zaikokannri-sakaihigashi-default-rtdb.firebaseio.com",
+      projectId: "zaikokannri-sakaihigashi",
+      storageBucket: "zaikokannri-sakaihigashi.appspot.com",
+      messagingSenderId: "92310858947",
+      appId: "1:92310858947:web:f6d6e1e537d87c2608676"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    const STORE_MEMORY_KEY = "nextInventoryLastStore";
+    const MONTH_MEMORY_KEY = "nextInventoryLastMonth";
+
+    const sheetSelect = document.getElementById("sheetSelect");
+    const inventoryBody = document.getElementById("inventoryBody");
+    const sheetTitle = document.getElementById("sheetTitle");
+    const storeNameInput = document.getElementById("storeName");
+    const targetMonthInput = document.getElementById("targetMonth");
+    const syncStatus = document.getElementById("syncStatus");
+    const errorBox = document.getElementById("errorBox");
+    const resetButton = document.getElementById("resetButton");
+    const prevButton = document.getElementById("prevButton");
+    const nextButton = document.getElementById("nextButton");
+
+    let activeSheet = 0;
+    let values = {};
+    let currentDataRef = null;
+    let stopCurrentListener = null;
+    let contextTimer = null;
+    const writeTimers = new Map();
+
+    function setStatus(text, type = "") {
+      syncStatus.textContent = text;
+      syncStatus.className = `sync-status ${type}`.trim();
+    }
+
+    function showError(message) {
+      errorBox.textContent = message;
+      errorBox.style.display = "block";
+      setStatus("同期エラー", "error");
+    }
+
+    function clearError() {
+      errorBox.textContent = "";
+      errorBox.style.display = "none";
+    }
+
+    function getDefaultMonth() {
+      const today = new Date();
+      return (
+        `${today.getFullYear()}-` +
+        `${String(today.getMonth() + 1).padStart(2, "0")}`
+      );
+    }
+
+    function storeNameToKey(storeName) {
+      const bytes = new TextEncoder().encode(storeName.trim());
+      let binary = "";
+
+      bytes.forEach(byte => {
+        binary += String.fromCharCode(byte);
+      });
+
+      return btoa(binary)
+        .replaceAll("+", "-")
+        .replaceAll("/", "_")
+        .replace(/=+$/g, "");
+    }
+
+    function getCurrentPath() {
+      const storeName = storeNameInput.value.trim();
+      const month = targetMonthInput.value;
+
+      if (!storeName || !month) {
+        return null;
+      }
+
+      return (
+        `nextInventory/${storeNameToKey(storeName)}/${month}`
+      );
+    }
+
+    function normalizeStoredValues(rawValues) {
+      const normalized = {};
+
+      if (!rawValues || typeof rawValues !== "object") {
+        return normalized;
+      }
+
+      Object.entries(rawValues).forEach(([itemId, itemValues]) => {
+        if (!itemValues || typeof itemValues !== "object") {
+          return;
+        }
+
+        normalized[itemId] = [
+          itemValues.v1 ?? "",
+          itemValues.v2 ?? "",
+          itemValues.v3 ?? ""
+        ];
+      });
+
+      return normalized;
+    }
+
+    function getValues(itemId) {
+      return values[itemId] || ["", "", ""];
+    }
+
+    function calculateTotal(rowValues) {
+      return rowValues.reduce((sum, value) => {
+        if (value === "") {
+          return sum;
+        }
+
+        const number = Number(value);
+        return Number.isFinite(number) ? sum + number : sum;
+      }, 0);
+    }
+
+    function formatNumber(value) {
+      return Number.isInteger(value)
+        ? String(value)
+        : String(Math.round(value * 1000) / 1000);
+    }
+
+    function renderSheetOptions() {
+      DATA.pages.forEach((page, index) => {
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = `${index + 1}ページ目　${page.name}`;
+        sheetSelect.appendChild(option);
+      });
+    }
+
+    function renderSheet() {
+      const page = DATA.pages[activeSheet];
+
+      sheetSelect.value = String(activeSheet);
+      sheetTitle.textContent =
+        `${activeSheet + 1}ページ目　${page.name}`;
+      inventoryBody.innerHTML = "";
+
+      let previousCategory = "";
+
+      page.items.forEach(item => {
+        const tr = document.createElement("tr");
+        tr.dataset.itemId = item.id;
+
+        if (item.category !== previousCategory) {
+          tr.classList.add("group-start");
+        }
+
+        const categoryTd = document.createElement("td");
+        categoryTd.className = "category";
+        categoryTd.textContent =
+          item.category !== previousCategory ? item.category : "";
+
+        const nameTd = document.createElement("td");
+        nameTd.className = "name";
+        nameTd.textContent = item.name;
+
+        const unitTd = document.createElement("td");
+        unitTd.className = "unit";
+        unitTd.textContent = item.unit;
+
+        tr.appendChild(categoryTd);
+        tr.appendChild(nameTd);
+        tr.appendChild(unitTd);
+
+        const rowValues = getValues(item.id);
+
+        for (let index = 0; index < 3; index += 1) {
+          const td = document.createElement("td");
+          const input = document.createElement("input");
+
+          input.type = "number";
+          input.min = "0";
+          input.step = "any";
+          input.inputMode = "decimal";
+          input.value = rowValues[index] ?? "";
+          input.dataset.itemId = item.id;
+          input.dataset.valueIndex = String(index);
+          input.setAttribute(
+            "aria-label",
+            `${item.name} 在庫数${index + 1}`
+          );
+
+          input.addEventListener("input", () => {
+            handleValueInput(item.id, tr);
+          });
+
+          input.addEventListener("keydown", event => {
+            if (event.key !== "Enter") {
+              return;
+            }
+
+            event.preventDefault();
+
+            const allInputs = Array.from(
+              inventoryBody.querySelectorAll('input[type="number"]')
+            );
+            const currentIndex = allInputs.indexOf(input);
+            const nextInput = allInputs[currentIndex + 1];
+
+            if (nextInput) {
+              nextInput.focus();
+              nextInput.select();
+            }
+          });
+
+          td.appendChild(input);
+          tr.appendChild(td);
+        }
+
+        const totalTd = document.createElement("td");
+        totalTd.className = "total";
+        totalTd.textContent =
+          formatNumber(calculateTotal(rowValues));
+        tr.appendChild(totalTd);
+
+        inventoryBody.appendChild(tr);
+        previousCategory = item.category;
+      });
+
+      prevButton.disabled = activeSheet === 0;
+      nextButton.disabled =
+        activeSheet === DATA.pages.length - 1;
+    }
+
+    function refreshVisibleValues() {
+      inventoryBody.querySelectorAll("tr[data-item-id]").forEach(tr => {
+        const itemId = tr.dataset.itemId;
+        const rowValues = getValues(itemId);
+        const inputs = tr.querySelectorAll('input[type="number"]');
+
+        inputs.forEach((input, index) => {
+          if (document.activeElement !== input) {
+            input.value = rowValues[index] ?? "";
+          }
+        });
+
+        tr.querySelector(".total").textContent =
+          formatNumber(calculateTotal(rowValues));
+      });
+    }
+
+    function handleValueInput(itemId, row) {
+      if (!currentDataRef) {
+        showError("店舗名と対象月を入力してください。");
+        return;
+      }
+
+      const rowInputs = Array.from(
+        row.querySelectorAll('input[type="number"]')
+      );
+      const rowValues = rowInputs.map(input => input.value);
+
+      values[itemId] = rowValues;
+      row.querySelector(".total").textContent =
+        formatNumber(calculateTotal(rowValues));
+
+      setStatus("保存中…", "saving");
+      clearTimeout(writeTimers.get(itemId));
+
+      const pathAtEdit = getCurrentPath();
+      const dataRefAtEdit = currentDataRef;
+
+      const timer = setTimeout(async () => {
+        try {
+          if (!pathAtEdit || !dataRefAtEdit) {
+            throw new Error("保存先が選択されていません。");
+          }
+
+          const itemRef = ref(
+            database,
+            `${pathAtEdit}/values/${itemId}`
+          );
+
+          if (rowValues.every(value => value === "")) {
+            await set(itemRef, null);
+          } else {
+            await set(itemRef, {
+              v1: rowValues[0] ?? "",
+              v2: rowValues[1] ?? "",
+              v3: rowValues[2] ?? ""
+            });
+          }
+
+          await update(dataRefAtEdit, {
+            "meta/storeName": storeNameInput.value.trim(),
+            "meta/updatedAt": serverTimestamp()
+          });
+
+          setStatus("Firebase同期済み", "online");
+        } catch (error) {
+          showError(
+            "Firebaseへの保存に失敗しました。\n" +
+            error.message
+          );
+        }
+      }, 350);
+
+      writeTimers.set(itemId, timer);
+    }
+
+    function connectCurrentData() {
+      clearTimeout(contextTimer);
+
+      contextTimer = setTimeout(() => {
+        const currentPath = getCurrentPath();
+
+        localStorage.setItem(
+          STORE_MEMORY_KEY,
+          storeNameInput.value.trim()
+        );
+        localStorage.setItem(
+          MONTH_MEMORY_KEY,
+          targetMonthInput.value
+        );
+
+        if (stopCurrentListener) {
+          stopCurrentListener();
+          stopCurrentListener = null;
+        }
+
+        values = {};
+        refreshVisibleValues();
+        clearError();
+
+        if (!currentPath) {
+          currentDataRef = null;
+          setStatus("店舗名と対象月を入力", "error");
+          return;
+        }
+
+        setStatus("Firebase接続中…");
+        currentDataRef = ref(database, currentPath);
+
+        stopCurrentListener = onValue(
+          currentDataRef,
+          snapshot => {
+            const data = snapshot.val() || {};
+            values = normalizeStoredValues(data.values);
+            refreshVisibleValues();
+            setStatus("Firebase同期済み", "online");
+            clearError();
+          },
+          error => {
+            showError(
+              "Firebaseからデータを読み込めません。\n" +
+              "Realtime Databaseのルールを確認してください。\n\n" +
+              error.message
+            );
+          }
+        );
+      }, 400);
+    }
+
+    async function resetCurrentSheet() {
+      if (!currentDataRef) {
+        alert("店舗名と対象月を入力してください。");
+        return;
+      }
+
+      const page = DATA.pages[activeSheet];
+
+      if (!confirm(
+        `「${page.name}」の入力をすべて消去しますか？`
+      )) {
+        return;
+      }
+
+      const updates = {};
+
+      page.items.forEach(item => {
+        updates[`values/${item.id}`] = null;
+        delete values[item.id];
+      });
+
+      updates["meta/storeName"] =
+        storeNameInput.value.trim();
+      updates["meta/updatedAt"] =
+        serverTimestamp();
+
+      try {
+        setStatus("消去中…", "saving");
+        await update(currentDataRef, updates);
+        refreshVisibleValues();
+        setStatus("Firebase同期済み", "online");
+      } catch (error) {
+        showError(
+          "シートの消去に失敗しました。\n" +
+          error.message
+        );
+      }
+    }
+
+    function changeSheet(index) {
+      if (
+        index < 0 ||
+        index >= DATA.pages.length
+      ) {
+        return;
+      }
+
+      activeSheet = index;
+      renderSheet();
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+
+    storeNameInput.value =
+      localStorage.getItem(STORE_MEMORY_KEY) ||
+      "堺東店";
+
+    targetMonthInput.value =
+      localStorage.getItem(MONTH_MEMORY_KEY) ||
+      getDefaultMonth();
+
+    renderSheetOptions();
+    renderSheet();
+    connectCurrentData();
+
+    storeNameInput.addEventListener(
+      "input",
+      connectCurrentData
+    );
+
+    targetMonthInput.addEventListener(
+      "change",
+      connectCurrentData
+    );
+
+    sheetSelect.addEventListener("change", () => {
+      changeSheet(Number(sheetSelect.value));
+    });
+
+    resetButton.addEventListener(
+      "click",
+      resetCurrentSheet
+    );
+
+    prevButton.addEventListener("click", () => {
+      changeSheet(activeSheet - 1);
+    });
+
+    nextButton.addEventListener("click", () => {
+      changeSheet(activeSheet + 1);
+    });
+  </script>
+</body>
+</html>
