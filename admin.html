@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在庫管理システム - 管理者画面</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- CSS -->
+    <!-- Assuming common.css exists in css/ -->
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="login-page" class="page">
+        <div class="card login-card">
+            <div class="login-logo">📦</div>
+            <h2>在庫管理システム</h2>
+            <p style="color: var(--admin-text-muted); margin-bottom: var(--space-lg);">管理者ログイン</p>
+            
+            <form id="login-form">
+                <div class="form-group" style="text-align: left;">
+                    <label for="login-store-id">店舗ID</label>
+                    <input type="text" id="login-store-id" class="form-input" required autocomplete="username">
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label for="login-password">パスワード</label>
+                    <input type="password" id="login-password" class="form-input" required autocomplete="current-password">
+                </div>
+                <div id="login-error" style="color: var(--admin-danger); font-size: 0.9rem; margin-bottom: var(--space-md); display: none;"></div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">ログイン</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" style="display: none;">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo"><i class="fas fa-box-open"></i></div>
+                <div class="sidebar-title">在庫管理システム</div>
+            </div>
+            <nav class="sidebar-nav">
+                <a class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-chart-line"></i> ダッシュボード
+                </a>
+                <a class="nav-item" data-page="stores">
+                    <i class="fas fa-store"></i> 店舗管理
+                </a>
+                <a class="nav-item" data-page="departments">
+                    <i class="fas fa-tags"></i> 部門管理
+                </a>
+                <a class="nav-item" data-page="templates">
+                    <i class="fas fa-clipboard-list"></i> テンプレート管理
+                </a>
+                <a class="nav-item" data-page="products">
+                    <i class="fas fa-boxes"></i> 商品管理
+                </a>
+                <a class="nav-item" data-page="history">
+                    <i class="fas fa-history"></i> 履歴
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <button id="logout-btn" class="btn btn-ghost" style="width: 100%;">
+                    <i class="fas fa-sign-out-alt"></i> ログアウト
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header" style="display: none;" id="mobile-header">
+                <button class="mobile-menu-btn" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+            </div>
+
+            <!-- Dashboard Page -->
+            <div id="dashboard-page" class="page active">
+                <div class="page-header">
+                    <h1 class="page-title">ダッシュボード</h1>
+                    <div>
+                        <span id="welcome-msg"></span>
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="card kpi-card">
+                        <div class="kpi-title">登録店舗数</div>
+                        <div class="kpi-value" id="kpi-store-count">-</div>
+                    </div>
+                    <div class="card kpi-card">
+                        <div class="kpi-title">全商品数</div>
+                        <div class="kpi-value" id="kpi-product-count">-</div>
+                    </div>
+                </div>
+
+                <h2 style="font-size: 1.2rem; margin-bottom: var(--space-md);">店舗別サマリー</h2>
+                <div class="kpi-grid" id="store-summary-grid">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Store Management Page -->
+            <div id="stores-page" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">店舗管理</h1>
+                    <button class="btn btn-primary" id="btn-add-store">
+                        <i class="fas fa-plus"></i> 新規店舗
+                    </button>
+                </div>
+
+                <div class="store-filter-bar" style="margin-bottom: var(--space-md); display: flex; gap: var(--space-sm);">
+                    <button class="store-filter-btn active" data-store-filter="all">すべて</button>
+                    <button class="store-filter-btn" data-store-filter="takeout">テイクアウト</button>
+                    <button class="store-filter-btn" data-store-filter="sakaba">酒場</button>
+                </div>
+
+                <div class="card table-container">
+                    <table id="stores-table">
+                        <thead>
+                            <tr>
+                                <th>店舗ID</th>
+                                <th>店舗名</th>
+                                <th>店舗種別</th>
+                                <th>権限</th>
+                                <th>登録日</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Department Management Page -->
+            <div id="departments-page" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">部門管理</h1>
+                    <button class="btn btn-primary" id="btn-add-dept">
+                        <i class="fas fa-plus"></i> 新規部門
+                    </button>
+                </div>
+
+                <div class="card">
+                    <p style="color: var(--admin-text-muted); margin-bottom: var(--space-lg); font-size: 0.9rem;">
+                        ここで登録した部門が、商品管理や使用側アプリの部門タブとして表示されます。
+                    </p>
+                    <div class="table-container">
+                        <table id="departments-table">
+                            <thead>
+                                <tr>
+                                    <th>部門キー</th>
+                                    <th>部門名</th>
+                                    <th style="width: 80px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Template Management Page -->
+            <div id="templates-page" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">テンプレート管理</h1>
+                    <button class="btn btn-primary" id="btn-add-template-item">
+                        <i class="fas fa-plus"></i> テンプレート商品追加
+                    </button>
+                </div>
+
+                <!-- Template Type Selector -->
+                <div class="template-type-selector" style="display: flex; gap: var(--space-sm); margin-bottom: var(--space-lg);">
+                    <button class="template-type-btn active" data-template-type="takeout">
+                        <i class="fas fa-bag-shopping"></i> テイクアウト用
+                    </button>
+                    <button class="template-type-btn" data-template-type="sakaba">
+                        <i class="fas fa-martini-glass-citrus"></i> 酒場用
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+                        <h3 style="margin: 0;"><span id="active-template-label">テイクアウト用</span>テンプレート (<span id="template-item-count">0</span>件)</h3>
+                    </div>
+
+                    <div class="template-guide-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-lg); font-size: 0.85rem; color: var(--admin-text-muted);">
+                        <p style="margin: 0 0 var(--space-sm) 0;"><i class="fas fa-info-circle" style="color: var(--admin-secondary);"></i> 新規店舗登録時に、選択した店舗種別のテンプレート商品が自動登録されます。</p>
+                        <p style="margin: 0;">既存店舗には「商品管理」画面の「テンプレート適用」ボタンで適用できます。</p>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="template-items-table">
+                            <thead>
+                                <tr>
+                                    <th>部門</th>
+                                    <th>商品名</th>
+                                    <th style="width: 100px;">倉庫初期値</th>
+                                    <th style="width: 100px;">使用数初期値</th>
+                                    <th style="width: 60px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="template-empty-state" style="text-align: center; padding: var(--space-xl); color: var(--admin-text-muted); display: none;">
+                        テンプレート商品が未登録です。「+ テンプレート商品追加」から追加してください。
+                    </div>
+                </div>
+
+                <!-- Import from existing store -->
+                <div class="card" style="margin-top: var(--space-lg);">
+                    <h3 style="margin: 0 0 var(--space-md) 0; font-size: 1rem;">既存店舗から取り込み</h3>
+                    <p style="color: var(--admin-text-muted); font-size: 0.85rem; margin-bottom: var(--space-md);">既存店舗の商品データをテンプレートに取り込みます。重複商品はスキップされます。</p>
+                    <div style="display: flex; gap: var(--space-sm); align-items: center;">
+                        <select id="template-source-store" class="form-select" style="flex: 1;">
+                            <option value="">取り込み元店舗を選択...</option>
+                        </select>
+                        <button class="btn btn-ghost" id="btn-import-template">
+                            <i class="fas fa-file-import"></i> 取り込み
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Management Page -->
+            <div id="products-page" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">商品管理 <span id="selected-store-type" class="selected-store-type" style="margin-left: var(--space-sm);"></span></h1>
+                    <div style="display: flex; gap: var(--space-sm); align-items: center;">
+                        <select id="product-store-select" class="form-select" style="width: auto; min-width: 150px;">
+                            <option value="">店舗を選択...</option>
+                        </select>
+                        <button type="button" class="btn btn-ghost" id="btn-apply-template" disabled title="選択店舗にテンプレートを適用">
+                            <i class="fas fa-clipboard-check"></i> テンプレート適用
+                        </button>
+                        <button class="btn btn-ghost" id="btn-export-csv" title="CSV出力">
+                            <i class="fas fa-file-csv"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card" id="product-management-content" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); flex-wrap: wrap; gap: var(--space-sm);">
+                        <div class="tabs" id="product-dept-tabs">
+                            <!-- Loaded dynamically from departments -->
+                        </div>
+                        <div style="display: flex; gap: var(--space-sm);">
+                            <button class="btn btn-ghost" id="btn-copy-remaining">
+                                <i class="fas fa-copy"></i> 残数コピー
+                            </button>
+                            <button class="btn btn-primary" id="btn-add-product">
+                                <i class="fas fa-plus"></i> 商品追加
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="products-table">
+                            <thead>
+                                <tr>
+                                    <th>商品名</th>
+                                    <th style="width: 120px;">倉庫在庫</th>
+                                    <th style="width: 120px;">店舗使用数</th>
+                                    <th style="width: 100px;">残数</th>
+                                    <th style="width: 80px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="product-select-prompt" class="card" style="text-align: center; padding: var(--space-xl); color: var(--admin-text-muted);">
+                    上のプルダウンから店舗を選択してください。
+                </div>
+            </div>
+
+            <!-- History Page -->
+            <div id="history-page" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">履歴</h1>
+                    <select id="history-store-select" class="form-select" style="width: auto; min-width: 150px;">
+                        <option value="">店舗を選択...</option>
+                    </select>
+                </div>
+
+                <div class="card" id="history-content" style="display: none;">
+                    <div class="timeline" id="history-timeline">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+                
+                <div id="history-select-prompt" class="card" style="text-align: center; padding: var(--space-xl); color: var(--admin-text-muted);">
+                    上のプルダウンから店舗を選択してください。
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- Store Modal -->
+    <div class="modal" id="store-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="store-modal-title">店舗登録</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="store-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="store-id">店舗ID (ログインに使用)</label>
+                        <input type="text" id="store-id" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="store-name">店舗名</label>
+                        <input type="text" id="store-name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="store-password">パスワード <span id="store-password-hint" style="font-size:0.8rem; color:var(--admin-text-muted);">(編集時は空白で変更なし)</span></label>
+                        <input type="password" id="store-password" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="store-role">権限</label>
+                        <select id="store-role" class="form-select">
+                            <option value="user">一般 (User)</option>
+                            <option value="admin">管理者 (Admin)</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="store-type-group">
+                        <label for="store-type">店舗種別</label>
+                        <select id="store-type" class="form-select" required>
+                            <option value="takeout">テイクアウト</option>
+                            <option value="sakaba">酒場</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: var(--space-sm); cursor: pointer;">
+                            <input type="checkbox" id="store-auto-template" checked style="width: auto;">
+                            テンプレートの在庫項目を自動登録する
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost modal-close-btn">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Template Item Modal -->
+    <div class="modal" id="template-item-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>テンプレート商品追加</h3>
+                <button type="button" class="modal-close" aria-label="閉じる"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="template-item-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="template-dept">部門</label>
+                        <select id="template-dept" class="form-select" required>
+                            <!-- Loaded dynamically from departments -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="template-name">商品名</label>
+                        <input type="text" id="template-name" class="form-input" required>
+                    </div>
+                    <div class="template-number-grid">
+                        <div class="form-group">
+                            <label for="template-warehouse">倉庫在庫初期値</label>
+                            <input type="number" id="template-warehouse" class="form-input" step="any" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="template-used">店舗使用数初期値</label>
+                            <input type="number" id="template-used" class="form-input" step="any" value="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost modal-close-btn">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">追加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="product-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="product-modal-title">商品追加</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="product-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="product-dept">部門</label>
+                        <select id="product-dept" class="form-select" required>
+                            <!-- Loaded dynamically from departments -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="product-name">商品名</label>
+                        <input type="text" id="product-name" class="form-input" required>
+                    </div>
+                    <div style="display: flex; gap: var(--space-md);">
+                        <div class="form-group" style="flex:1;">
+                            <label for="product-warehouse">倉庫在庫初期値</label>
+                            <input type="number" id="product-warehouse" class="form-input" step="any" value="0" required>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label for="product-used">店舗使用数初期値</label>
+                            <input type="number" id="product-used" class="form-input" step="any" value="0" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost modal-close-btn">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">追加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Department Modal -->
+    <div class="modal" id="dept-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>部門追加</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="dept-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="dept-key">部門キー（英数字、例: pack, food）</label>
+                        <input type="text" id="dept-key" class="form-input" required pattern="[a-zA-Z0-9_]+" placeholder="例: dessert">
+                    </div>
+                    <div class="form-group">
+                        <label for="dept-name">部門名（表示名）</label>
+                        <input type="text" id="dept-name" class="form-input" required placeholder="例: デザート">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost modal-close-btn">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">追加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal" id="confirm-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3 id="confirm-title">確認</h3>
+                <button class="modal-close"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirm-message">本当に削除しますか？</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost modal-close-btn">キャンセル</button>
+                <button type="button" class="btn btn-danger" id="confirm-ok-btn">削除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Firebase SDK 8.x Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/admin-app.js"></script>
+    <script src="js/store-type-extension.js"></script>
+</body>
+</html>
