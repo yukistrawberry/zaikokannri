@@ -571,12 +571,14 @@
     function showSnackbar(message) {
       clearTimeout(snackbarTimer);
       snackbarMessage.textContent = message;
+      snackbar.hidden = false;
       snackbar.classList.add("show");
       snackbarTimer = window.setTimeout(hideSnackbar, 6000);
     }
 
     function hideSnackbar() {
       snackbar.classList.remove("show");
+      snackbar.hidden = true;
       clearTimeout(snackbarTimer);
     }
 
