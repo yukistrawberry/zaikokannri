@@ -9,7 +9,7 @@
 
     <link rel="stylesheet" href="css/common.css?v=e55900bd9636">
     <link rel="stylesheet" href="css/user.css?v=e30914a80703">
-<link rel="stylesheet" href="css/integration.css?v=b7d9206e0e2d"><link rel="stylesheet" href="css/shared-ui.css?v=d4cf2c0dfe0c"><link rel="stylesheet" href="css/shared-header.css?v=6de7f07f8bd2"></head>
+<link rel="stylesheet" href="css/integration.css?v=b7d9206e0e2d"><link rel="stylesheet" href="css/monthly-scoped.css?v=e5b8745e00e9"><link rel="stylesheet" href="css/shared-ui.css?v=815ab0af713e"><link rel="stylesheet" href="css/shared-header.css?v=953e1ac28ec4"><link rel="stylesheet" href="css/unified-views.css?v=5b0cddb6c0b6"></head>
 <body>
     <!-- Login Screen -->
     <div id="login-screen" class="screen hidden">
@@ -95,7 +95,7 @@
             </button>
         </header>
 
-        <main class="app-main"><nav class="integration-nav" aria-label="在庫管理の切り替え"><span aria-current="page"><strong>毎日在庫</strong></span><a href="monthly.html">月末棚卸に切り替え</a></nav>
+<div id="daily-view">        <main class="app-main"><nav class="integration-nav" aria-label="在庫管理の切り替え"><span aria-current="page"><strong>毎日在庫</strong></span><a href="#monthly" data-inventory-view="monthly">月末棚卸に切り替え</a></nav>
             <p class="inventory-guide">
                 倉庫数と使用数を入力すると、残数が自動で更新されます。
             </p>
@@ -133,7 +133,66 @@
                 </svg>
                 <span>残数をコピー</span>
             </button>
-        </div>
+        </div></div>
+<section id="monthly-view" hidden>
+<dialog id="transfer-confirm" class="transfer-confirm" aria-labelledby="transfer-confirm-title">
+<h2 id="transfer-confirm-title">本当に毎日在庫へ反映しますか？</h2>
+<p>紐づけ済み商品の倉庫数・使用数を更新します。</p>
+<div class="transfer-confirm-actions"><button id="transfer-cancel" type="button">キャンセル</button><button id="transfer-confirm-send" type="button">反映する</button></div>
+</dialog>  <main class="monthly-main"><nav class="integration-nav" aria-label="在庫管理の切り替え"><a href="#daily" data-inventory-view="daily">毎日在庫に切り替え</a><span aria-current="page"><strong>月末棚卸</strong></span></nav><section class="monthly-tools"><div class="header-row"><h1>月末棚卸</h1><div id="saveStatus" class="save-status">自動保存</div></div><div class="toolbar">
+      <input id="searchInput" class="search" type="search" placeholder="品目名を検索" autocomplete="off" aria-label="品目名を検索">
+      <button id="openReset" class="action-button" type="button">リセット</button>
+    </div></section><nav class="tabs-wrap" aria-label="在庫カテゴリ">
+    <div id="tabs" class="tabs" role="tablist"></div>
+  </nav>
+    <div class="category-info">
+      <h2 id="categoryTitle" class="category-title"></h2>
+      <span id="itemCount" class="item-count"></span>
+    </div>
+    <p id="gestureHint" class="gesture-hint">左スワイプで削除／右上の「⠿」を長押しして並べ替え</p>
+    <section id="items" class="items" aria-live="polite"></section>
+  </main>
+
+  <div id="resetSheet" class="sheet-backdrop" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+    <div class="sheet">
+      <h2 id="resetTitle">入力内容をリセット</h2>
+      <p>倉庫①・②・③に入力したすべての数量を0に戻します。追加した品目と並び順は残ります。</p>
+      <div class="sheet-actions">
+        <button id="cancelReset" class="sheet-button cancel-button" type="button">キャンセル</button>
+        <button id="confirmReset" class="sheet-button reset-button" type="button">すべて0にする</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="addSheet" class="sheet-backdrop" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <form id="addForm" class="sheet" novalidate>
+      <h2 id="addTitle">品目を追加</h2>
+      <p id="addCategoryText"></p>
+      <div class="form-group">
+        <label class="form-label" for="newItemName">品目名</label>
+        <input id="newItemName" class="form-input" type="text" maxlength="80" autocomplete="off" placeholder="例：キャベツ" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="newItemUnit">単位</label>
+        <input id="newItemUnit" class="form-input" type="text" maxlength="12" list="unitOptions" autocomplete="off" placeholder="例：Kg" required>
+        <datalist id="unitOptions">
+          <option value="Kg"><option value="本"><option value="袋"><option value="缶"><option value="枚">
+          <option value="CS"><option value="Pc"><option value="個"><option value="箱"><option value="パック">
+        </datalist>
+      </div>
+      <div id="addError" class="form-error" aria-live="polite"></div>
+      <div class="sheet-actions">
+        <button id="cancelAdd" class="sheet-button cancel-button" type="button">キャンセル</button>
+        <button class="sheet-button primary-button" type="submit">追加する</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="snackbar" class="snackbar" hidden role="status" aria-live="polite">
+    <span id="snackbarMessage" class="snackbar-message"></span>
+  </div>
+
+</section>
     </div>
 
     <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
@@ -149,7 +208,12 @@
 <script src="js/firebase-config.js?v=997a74894992"></script>
     <script src="js/auth.js?v=3bc0ec0f6f5b"></script>
     <script src="js/db.js?v=483c4818fec0"></script>
-    <script src="js/user-app.js?v=20111ec18c2f"></script>
+    <script src="js/monthly-app.js?v=766ad7bb509e"></script>
+    <script src="js/transfer-core.js?v=554ec2d5745e"></script>
+    <script src="js/sync-mappings.js?v=82495ae5aaf2"></script>
+    <script src="js/unified-views.js?v=c31b35ba2184"></script>
+    <script src="js/monthly-integration.js?v=14ee87246c27"></script>
+    <script src="js/user-app.js?v=b7eb7c8fae30"></script>
 </body>
 </html>
 

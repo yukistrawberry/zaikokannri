@@ -3,8 +3,10 @@
   await Auth.ready();
   'use strict';
   function staffSession() { return Auth.getSession()?.role==='user' ? Auth.getSession() : null; }
+  if (!staffSession()) await new Promise(resolve => {
+    const stop = Auth.onChange(value => { if (value?.role === 'user') { stop(); resolve(); } });
+  });
   const initialSession = staffSession();
-  if (!initialSession) { location.replace('index.html'); return; }
   const panel = document.createElement('section');
   panel.className = 'integration-panel';
   panel.innerHTML = '<button type="button" class="primary" id="transferSend">毎日在庫へ反映</button><p id="transferMessage" class="message" role="status" aria-live="polite"></p>';
@@ -13,23 +15,11 @@
   const status = document.getElementById('transferMessage');
   const message = (text, error = false) => { status.textContent = text; status.classList.toggle('error', error); };
   document.getElementById('header-store-name').textContent = initialSession.storeName || initialSession.storeId;
-  document.getElementById('logout-btn').addEventListener('click', async () => {
-    if (!confirm('ログアウトしますか？')) return;
-    flushInventorySave();
-    await Auth.logout();
-    location.replace('index.html');
-  });
   function ensureSession() {
     const current = staffSession();
-    if (!current || current.storeId !== initialSession.storeId) {
-      location.replace('index.html'); throw new Error('ログイン店舗が変更されました。毎日在庫から開き直してください。');
-    }
+    if (!current) throw new Error('ログインし直してください。');
     return current;
   }
-  function checkSession() { if (staffSession()?.storeId !== initialSession.storeId) location.replace('index.html'); }
-  window.addEventListener('pageshow', checkSession);
-  window.addEventListener('storage', event => { if (event.key === 'inventory_auth' || event.key === null) checkSession(); });
-  Auth.onChange(checkSession);
   let busy = false;
   function mappingsFor(store) { return window.InventorySyncMappings?.[store] || {}; }
   function monthlySnapshot() {
@@ -42,6 +32,7 @@
   }
   button.addEventListener('click', async () => {
     if (busy) return;
+    if (!await InventoryConfirm()) return;
     busy = true; button.disabled = true; button.textContent = '反映中…'; panel.setAttribute('aria-busy','true');
     let writing = false, committed = false;
     try {
@@ -66,7 +57,8 @@
         item.monthlyTransfer.actorUid = session.uid;
         for (const field of ['warehouse','used','updatedAt','monthlyTransfer']) updates[`${change.target}/${field}`] = item[field];
       }
-      ensureSession(); writing = true;
+      if (ensureSession().storeId !== session.storeId) throw new Error('ログイン店舗が変更されました。');
+      writing = true;
       // One atomic multi-location write: rules validate every existing product.
       await ref.update(updates);
       committed = true;

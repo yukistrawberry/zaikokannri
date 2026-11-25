@@ -64,6 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Screen Management ---
     function showLoginScreen() {
+        flushInventorySave();
+        window.InventoryViews?.show('daily');
         if (document.body.dataset.requireSession === 'true') {
             location.replace('index.html?release=daily-route-2');
             return;
@@ -354,6 +356,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     logoutBtn.addEventListener('click', async () => {
         if (confirm('ログアウトしますか？')) {
+            flushInventorySave();
+            window.InventoryViews?.show('daily');
             await Auth.logout();
             session = null;
             if (inventoryRef) {

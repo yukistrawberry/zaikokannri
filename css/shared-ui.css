@@ -30,7 +30,7 @@
 }
 .integration-nav a:hover { background: var(--unified-primary-soft); color: var(--unified-primary-dark); }
 .integration-nav a:focus-visible { outline: 3px solid #00a88455; outline-offset: 2px; }
-body:has(#saveStatus) {
+#monthly-view {
   --bg: #f6f8fb;
   --surface: #fff;
   --surface-soft: #f8fafc;
@@ -48,14 +48,14 @@ body:has(#saveStatus) {
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Segoe UI", sans-serif;
   line-height: 1.5;
 }
-body:has(#saveStatus) .app-header {
+#monthly-view .app-header {
   background: rgb(255 255 255 / 94%);
   border-bottom-color: rgb(223 230 238 / 90%);
   box-shadow: 0 2px 8px rgb(15 23 42 / 5%);
 }
-body:has(#saveStatus) h1 { font-size: 1.05rem; font-weight: 700; line-height: 1.25; letter-spacing: normal; }
-body:has(#saveStatus) .tabs-wrap { background: rgb(246 248 251 / 96%); }
-body:has(#saveStatus) .tab {
+#monthly-view h1 { font-size: 1.05rem; font-weight: 700; line-height: 1.25; letter-spacing: normal; }
+#monthly-view .tabs-wrap { background: rgb(246 248 251 / 96%); }
+#monthly-view .tab {
   border: 1px solid var(--unified-border);
   background: #fff;
   color: var(--unified-muted);
@@ -63,26 +63,26 @@ body:has(#saveStatus) .tab {
   font-size: .92rem;
   font-weight: 600;
 }
-body:has(#saveStatus) .tab[aria-selected="true"] {
+#monthly-view .tab[aria-selected="true"] {
   border-color: transparent;
   background: linear-gradient(135deg, var(--unified-primary), var(--unified-primary-dark));
   color: #fff;
   box-shadow: 0 5px 14px rgb(0 168 132 / 22%);
 }
-body:has(#saveStatus) .tab:hover:not([aria-selected="true"]) { background: #f8fffc; border-color: #a9dfd2; color: var(--unified-primary-dark); }
-body:has(#saveStatus) .search, body:has(#saveStatus) .form-input { border-color: var(--unified-border); border-radius: 10px; }
-body:has(#saveStatus) .search:focus, body:has(#saveStatus) .form-input:focus,
-body:has(#saveStatus) .stock-input:focus { border-color: var(--unified-primary); box-shadow: 0 0 0 3px rgb(0 168 132 / 14%); background: #fff; }
-body:has(#saveStatus) .action-button { color: var(--unified-text); font-size: .9rem; font-weight: 600; border-color: var(--unified-border); border-radius: 10px; box-shadow: 0 2px 8px rgb(15 23 42 / 5%); }
-body:has(#saveStatus) .action-button:hover { border-color: #a9dfd2; background: #f8fffc; }
-body:has(#saveStatus) .category-title { font-size: 1.05rem; font-weight: 700; }
-body:has(#saveStatus) .item-name { font-size: .92rem; font-weight: 650; line-height: 1.35; }
-body:has(#saveStatus) .stock-input { background: #f8fafc; font-weight: 700; color: var(--unified-text); font-variant-numeric: tabular-nums; }
-body:has(#saveStatus) .stock-cell label, body:has(#saveStatus) .unit-badge { color: var(--unified-muted); font-weight: 600; }
-body:has(#saveStatus) .total-box { color: var(--unified-primary-dark); background: var(--unified-primary-soft); font-weight: 800; font-variant-numeric: tabular-nums; }
-body:has(#saveStatus) .drag-handle { color: var(--unified-muted); border-color: var(--unified-border); }
-body:has(#saveStatus) .primary-button { background: linear-gradient(135deg, var(--unified-primary), var(--unified-primary-dark)); }
-body:has(#saveStatus) .integration-panel {
+#monthly-view .tab:hover:not([aria-selected="true"]) { background: #f8fffc; border-color: #a9dfd2; color: var(--unified-primary-dark); }
+#monthly-view .search, #monthly-view .form-input { border-color: var(--unified-border); border-radius: 10px; }
+#monthly-view .search:focus, #monthly-view .form-input:focus,
+#monthly-view .stock-input:focus { border-color: var(--unified-primary); box-shadow: 0 0 0 3px rgb(0 168 132 / 14%); background: #fff; }
+#monthly-view .action-button { color: var(--unified-text); font-size: .9rem; font-weight: 600; border-color: var(--unified-border); border-radius: 10px; box-shadow: 0 2px 8px rgb(15 23 42 / 5%); }
+#monthly-view .action-button:hover { border-color: #a9dfd2; background: #f8fffc; }
+#monthly-view .category-title { font-size: 1.05rem; font-weight: 700; }
+#monthly-view .item-name { font-size: .92rem; font-weight: 650; line-height: 1.35; }
+#monthly-view .stock-input { background: #f8fafc; font-weight: 700; color: var(--unified-text); font-variant-numeric: tabular-nums; }
+#monthly-view .stock-cell label, #monthly-view .unit-badge { color: var(--unified-muted); font-weight: 600; }
+#monthly-view .total-box { color: var(--unified-primary-dark); background: var(--unified-primary-soft); font-weight: 800; font-variant-numeric: tabular-nums; }
+#monthly-view .drag-handle { color: var(--unified-muted); border-color: var(--unified-border); }
+#monthly-view .primary-button { background: linear-gradient(135deg, var(--unified-primary), var(--unified-primary-dark)); }
+#monthly-view .integration-panel {
   color: var(--unified-text);
   border-color: var(--unified-border);
   border-radius: 18px;
@@ -91,24 +91,24 @@ body:has(#saveStatus) .integration-panel {
   line-height: 1.6;
   box-shadow: 0 12px 30px rgb(15 23 42 / 8%);
 }
-body:has(#saveStatus) .integration-panel h2 { font-size: 1.05rem; font-weight: 700; line-height: 1.4; }
-body:has(#saveStatus) .integration-panel > p { color: var(--unified-muted); }
-body:has(#saveStatus) .integration-panel button,
-body:has(#saveStatus) .integration-panel input,
-body:has(#saveStatus) .integration-panel select { border-color: var(--unified-border); border-radius: 10px; color: var(--unified-text); font-size: .86rem; font-weight: 600; }
-body:has(#saveStatus) .integration-panel button:hover:not(:disabled) { border-color: #a9dfd2; background: #f8fffc; color: var(--unified-primary-dark); }
-body:has(#saveStatus) .integration-panel button.primary { color: #fff; background: linear-gradient(135deg, var(--unified-primary), var(--unified-primary-dark)); border-color: transparent; box-shadow: 0 5px 14px rgb(0 168 132 / 16%); }
-body:has(#saveStatus) .integration-panel summary { color: var(--unified-primary-dark); font-weight: 600; cursor: pointer; }
-body:has(#saveStatus) .integration-panel .message.error { color: #dc2626; }
-body:has(#saveStatus) .integration-panel dialog { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Segoe UI", sans-serif; border-color: var(--unified-border); border-radius: 18px; box-shadow: 0 12px 30px rgb(15 23 42 / 8%); }
-body:has(#saveStatus) .integration-panel th { color: var(--unified-muted); background: #f8fafc; }
-body:has(#saveStatus) input[type="checkbox"] { accent-color: var(--unified-primary); }
+#monthly-view .integration-panel h2 { font-size: 1.05rem; font-weight: 700; line-height: 1.4; }
+#monthly-view .integration-panel > p { color: var(--unified-muted); }
+#monthly-view .integration-panel button,
+#monthly-view .integration-panel input,
+#monthly-view .integration-panel select { border-color: var(--unified-border); border-radius: 10px; color: var(--unified-text); font-size: .86rem; font-weight: 600; }
+#monthly-view .integration-panel button:hover:not(:disabled) { border-color: #a9dfd2; background: #f8fffc; color: var(--unified-primary-dark); }
+#monthly-view .integration-panel button.primary { color: #fff; background: linear-gradient(135deg, var(--unified-primary), var(--unified-primary-dark)); border-color: transparent; box-shadow: 0 5px 14px rgb(0 168 132 / 16%); }
+#monthly-view .integration-panel summary { color: var(--unified-primary-dark); font-weight: 600; cursor: pointer; }
+#monthly-view .integration-panel .message.error { color: #dc2626; }
+#monthly-view .integration-panel dialog { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Segoe UI", sans-serif; border-color: var(--unified-border); border-radius: 18px; box-shadow: 0 12px 30px rgb(15 23 42 / 8%); }
+#monthly-view .integration-panel th { color: var(--unified-muted); background: #f8fafc; }
+#monthly-view input[type="checkbox"] { accent-color: var(--unified-primary); }
 
 /* Same position in the flow as the daily switch: below the header, above categories. */
-body:has(#saveStatus) .monthly-switch {
+#monthly-view .monthly-switch {
   max-width: 896px;
   margin: 16px auto 0;
 }
 @media (max-width: 920px) {
-  body:has(#saveStatus) .monthly-switch { margin-left: 12px; margin-right: 12px; }
+  #monthly-view .monthly-switch { margin-left: 12px; margin-right: 12px; }
 }

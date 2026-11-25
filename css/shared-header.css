@@ -63,13 +63,13 @@
  border-radius:11px;background:#fff;color:#64748b;cursor:pointer;
 }
 .app-header.shared-header .btn-ghost:hover {background:#f8fafc;color:#172033;border-color:#cbd5e1;}
-body:has(#saveStatus) main.monthly-main {
+#monthly-view main.monthly-main {
  width:100%;max-width:860px;margin:0 auto;padding:calc(68px + env(safe-area-inset-top) + 16px) 12px calc(90px + env(safe-area-inset-bottom));
 }
 .monthly-tools{margin:16px 0 0;}
-body:has(#saveStatus) .monthly-main .tabs-wrap{position:static;top:auto;margin-top:12px;}
-body:has(#saveStatus) .monthly-main .tabs{padding:10px 0;}
-@media(max-width:430px){body:has(#saveStatus) main.monthly-main{padding-left:8px;padding-right:8px;}}
-@media(min-width:768px){.app-header.shared-header{padding-left:24px;padding-right:24px;}body:has(#saveStatus) main.monthly-main{padding-left:24px;padding-right:24px;}}
+#monthly-view .monthly-main .tabs-wrap{position:static;top:auto;margin-top:12px;}
+#monthly-view .monthly-main .tabs{padding:10px 0;}
+@media(max-width:430px){#monthly-view main.monthly-main{padding-left:8px;padding-right:8px;}}
+@media(min-width:768px){.app-header.shared-header{padding-left:24px;padding-right:24px;}#monthly-view main.monthly-main{padding-left:24px;padding-right:24px;}}
 
 html { scrollbar-gutter: stable; }

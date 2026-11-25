@@ -1,0 +1,14 @@
+#monthly-view[hidden], #daily-view[hidden] { display: none !important; }
+#monthly-view main.monthly-main { min-height: calc(100dvh - 68px); }
+#monthly-view .snackbar[hidden] { display: none !important; }
+
+#monthly-view .tabs { width: 100%; min-width: 0; }
+#monthly-view .transfer-confirm { width: min(420px, calc(100% - 32px)); border: 1px solid #dfe6ee; border-radius: 18px; padding: 24px; color: #172033; box-shadow: 0 18px 60px #0003; }
+#monthly-view .transfer-confirm::backdrop { background: #17203366; }
+#monthly-view .transfer-confirm h2 { font-size: 19px; margin: 0 0 12px; }
+#monthly-view .transfer-confirm p { line-height: 1.6; color: #64748b; }
+#monthly-view .transfer-confirm-actions { display: flex; gap: 12px; margin-top: 24px; }
+#monthly-view .transfer-confirm-actions button { flex: 1; min-height: 44px; border: 1px solid #dfe6ee; border-radius: 10px; background: #fff; cursor: pointer; }
+#monthly-view #transfer-confirm-send { background: #008f75; color: white; border-color: #008f75; }
+
+#monthly-view .transfer-confirm { margin: auto; inset: 0; max-height: 85dvh; overflow: auto; }

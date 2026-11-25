@@ -433,7 +433,7 @@
       function startDrag(clientX, clientY) {
         if (pointerId === null || !shell.isConnected) return;
         dragging = true;
-        document.body.classList.add("drag-active");
+        document.getElementById('monthly-view').classList.add("drag-active");
 
         const rect = shell.getBoundingClientRect();
         offsetX = Math.max(0, Math.min(rect.width, clientX - rect.left));
@@ -454,7 +454,7 @@
         ghost.style.height = `${rect.height}px`;
         ghost.setAttribute("aria-hidden", "true");
         ghost.querySelectorAll("input, button").forEach(element => element.tabIndex = -1);
-        document.body.appendChild(ghost);
+        document.getElementById('monthly-view').appendChild(ghost);
         moveGhost(clientX, clientY);
 
         cancelActiveDrag = cleanup;
@@ -526,7 +526,7 @@
         const wasDragging = dragging;
         dragging = false;
         pointerId = null;
-        document.body.classList.remove("drag-active");
+        document.getElementById('monthly-view').classList.remove("drag-active");
 
         if (placeholder?.isConnected) {
           placeholder.parentElement.insertBefore(shell, placeholder);

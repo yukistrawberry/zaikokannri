@@ -13,3 +13,5 @@ Node.js 22、pnpm install、pnpm build。公開対象はdist。functionsは旧�
 
 GitHub Pages: https://yukistrawberry.github.io/zaikokannri/
 GitHub Pagesでも使う場合は、Fraud Defenseのサイトキーの許可ドメインにyukistrawberry.github.ioを追加する。HostingのHTTPヘッダー設定はGitHub Pagesには反映されない。管理ツールやバックアップをPagesの公開フォルダーへ入れない。
+
+毎日在庫・月末棚卸はindex.html内で表示を切り替える。画面切り替え時にページ移動・認証の再初期化は行わない。毎日在庫への反映には最終確認があり、キャンセル時は書き込まない。daily.html/monthly.htmlは旧URL用の入口。

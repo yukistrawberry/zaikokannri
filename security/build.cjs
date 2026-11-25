@@ -11,6 +11,16 @@ const old=headers.find(header=>header.key==='Content-Security-Policy');
 if(old) old.value=csp; else headers.push({key:'Content-Security-Policy',value:csp});
 fs.writeFileSync(configFile,JSON.stringify(config,null,2)+'\n');
 const dist=path.join(root,'dist');fs.mkdirSync(dist,{recursive:true});
+// Keep browser asset URLs in sync with each file's content.
+for (const name of ['index.html','daily.html','monthly.html','admin.html']) {
+ const file=path.join(root,name);
+ let html=fs.readFileSync(file,'utf8');
+ html=html.replace(/((?:src|href)=")((?:css|js)\/[^"?]+)(?:\?[^" ]*)?"/g,(_all,prefix,asset)=>{
+  const digest=require('node:crypto').createHash('sha256').update(fs.readFileSync(path.join(root,asset))).digest('hex').slice(0,12);
+  return prefix+asset+'?v='+digest+'"';
+ });
+ fs.writeFileSync(file,html);
+}
 for(const name of ['index.html','daily.html','monthly.html','admin.html'])fs.copyFileSync(path.join(root,name),path.join(dist,name));
 for(const name of ['css','js'])fs.cpSync(path.join(root,name),path.join(dist,name),{recursive:true});
 for(const name of ['index.html','daily.html','monthly.html','admin.html']){
