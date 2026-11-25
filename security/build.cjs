@@ -19,7 +19,7 @@ for(const name of ['index.html','daily.html','monthly.html','admin.html']){
  if(/\son(?:click|change|load|error)\s*=/i.test(html))throw new Error(`Inline event in ${name}`);
  for(const [,value] of html.matchAll(/(?:src|href)="([^"]+)"/g)){
   if(/^(https?:|data:|#)/.test(value))continue;
-  if(!fs.existsSync(path.join(dist,value)))throw new Error(`Missing asset ${value}`);
+  if(!fs.existsSync(path.join(dist,value.split('?')[0])))throw new Error(`Missing asset ${value}`);
  }
 }
 console.log('Built allowlisted public assets and matching server-side product rules. No private tooling is published.');

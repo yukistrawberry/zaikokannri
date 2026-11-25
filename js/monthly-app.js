@@ -571,6 +571,12 @@
     function showSnackbar(message) {
       clearTimeout(snackbarTimer);
       snackbarMessage.textContent = message;
+      if (!document.getElementById('undoDelete')) {
+        const undo = document.createElement('button');
+        undo.id = 'undoDelete'; undo.className = 'undo-button'; undo.type = 'button';
+        undo.textContent = '元に戻す'; undo.addEventListener('click', undoDelete);
+        snackbar.appendChild(undo);
+      }
       snackbar.hidden = false;
       snackbar.classList.add("show");
       snackbarTimer = window.setTimeout(hideSnackbar, 6000);
@@ -579,6 +585,7 @@
     function hideSnackbar() {
       snackbar.classList.remove("show");
       snackbar.hidden = true;
+      document.getElementById('undoDelete')?.remove();
       clearTimeout(snackbarTimer);
     }
 
@@ -644,7 +651,7 @@
     document.getElementById("openReset").addEventListener("click", () => resetSheet.classList.add("open"));
     document.getElementById("cancelReset").addEventListener("click", () => resetSheet.classList.remove("open"));
     document.getElementById("cancelAdd").addEventListener("click", closeAddSheet);
-    document.getElementById("undoDelete").addEventListener("click", undoDelete);
+
 
     document.getElementById("confirmReset").addEventListener("click", () => {
       inventory = {};
