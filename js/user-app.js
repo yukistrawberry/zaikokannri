@@ -64,6 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Screen Management ---
     function showLoginScreen() {
+        if (document.body.dataset.requireSession === 'true') {
+            location.replace('index.html?release=daily-route-2');
+            return;
+        }
         loginScreen.classList.remove('hidden');
         mainScreen.classList.add('hidden');
     }
