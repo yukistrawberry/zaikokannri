@@ -6,19 +6,18 @@
     <title>在庫管理システム - 管理者画面</title>
     
     <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <!-- CSS -->
     <!-- Assuming common.css exists in css/ -->
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/admin.css">
-</head>
+<link rel="stylesheet" href="css/integration.css"></head>
 <body>
     <!-- Login Page -->
     <div id="login-page" class="page">
         <div class="card login-card">
-            <div class="login-logo">📦</div>
+            <div class="login-logo"><img src="css/images/header_logo_02.png" alt="じゃんぼ總本店" width="410" height="69"></div>
             <h2>在庫管理システム</h2>
             <p style="color: var(--admin-text-muted); margin-bottom: var(--space-lg);">管理者ログイン</p>
             
@@ -489,14 +488,18 @@
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Firebase SDK 8.x Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     
     <!-- App Scripts -->
-    <script src="js/firebase-config.js"></script>
+    <script src="js/vendor/firebase-app-compat.js"></script>
+<script src="js/vendor/firebase-auth-compat.js"></script>
+<script src="js/vendor/firebase-database-compat.js"></script>
+<script src="js/vendor/firebase-app-check-compat.js"></script>
+<script src="js/runtime-config.js"></script>
+<script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/db.js"></script>
-    <script src="js/admin-app.js"></script>
+    <script src="js/security-ui.js"></script>
+<script src="js/admin-app.js"></script>
     <script src="js/store-type-extension.js"></script>
-</body>
+<nav class="integration-nav" aria-label="アプリ切替" style="position:fixed;bottom:0;left:0;right:0;z-index:10000;justify-content:center"><a href="index.html">店舗ログイン・毎日在庫</a><a href="admin.html">管理者</a></nav><style>body{padding-bottom:60px!important}</style></body>
 </html>

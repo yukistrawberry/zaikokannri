@@ -184,11 +184,8 @@
         if (!storeId || !STORE_TYPES[type]) return;
 
         const database = getDatabase();
-        // 必須情報は stores 配下に保存する。
-        await database.ref(`stores/${storeId}`).update({
-            storeType: type,
-            updatedAt: nowTimestamp()
-        });
+        // Account metadata is controlled by the authenticated server function.
+        await DB.updateStore(storeId, { storeType: type });
 
         // 補助インデックスは権限設定によって書けない場合があるため、失敗しても本処理を止めない。
         try {
@@ -838,6 +835,11 @@
 
     async function initialize() {
         try {
+            await Auth.ready();
+            if (!Auth.isAdmin()) {
+                const stop = Auth.onChange(session => { if (session?.role === 'admin') { stop(); initialize(); } });
+                return;
+            }
             await retry(() => {
                 if (!window.firebase || !firebase.database || !firebase.apps?.length) return false;
                 return true;

@@ -22,47 +22,17 @@ const DB = (() => {
   }
 
   // 店舗追加
-  async function addStore(storeId, name, password, role = 'user', storeType = 'takeout') {
-    const id = storeId.trim().toLowerCase();
-    if (!id || !name || !password) {
-      throw new Error('すべての項目を入力してください。');
-    }
-
-    // ID重複チェック
-    const existing = await database.ref(`stores/${id}`).once('value');
-    if (existing.exists()) {
-      throw new Error('この店舗IDは既に使用されています。');
-    }
-
-    const hashedPassword = await Auth.hashPassword(password);
-    await database.ref(`stores/${id}`).set({
-      name: name.trim(),
-      password: hashedPassword,
-      role,
-      storeType: role === 'admin' ? 'admin' : storeType,
-      createdAt: Date.now()
-    });
+  async function manageAccount(data) {
+    throw new Error('無料版では店舗アカウントの追加・変更・削除は管理者用ツールで行ってください。');
   }
-
-  // 店舗更新
-  async function updateStore(storeId, updates) {
-    const updateData = { ...updates };
-    if (updateData.password) {
-      updateData.password = await Auth.hashPassword(updateData.password);
-    }
-    updateData.updatedAt = Date.now();
-    await database.ref(`stores/${storeId}`).update(updateData);
+  async function addStore(storeId,name,password,role='user',storeType='takeout') {
+    return manageAccount({action:'create',storeId:storeId.trim().toLowerCase(),name,password,role,storeType});
   }
-
-  // 店舗削除
+  async function updateStore(storeId,updates) {
+    return manageAccount({action:'update',storeId,...updates});
+  }
   async function deleteStore(storeId) {
-    const updates = {};
-    updates[`stores/${storeId}`] = null;
-    updates[`inventory/${storeId}`] = null;
-    updates[`history/${storeId}`] = null;
-    updates[`storeTypes/${storeId}`] = null;
-    updates[`inventoryTemplateState/${storeId}`] = null;
-    await database.ref().update(updates);
+    return manageAccount({action:'delete',storeId});
   }
 
   // ----------------------------------------------------------
@@ -169,7 +139,7 @@ const DB = (() => {
       if (!data) {
         // デフォルト部門を初期化
         const defaults = { pack: 'パック', food: '食材' };
-        database.ref('departments').set(defaults);
+        if (Auth.isAdmin()) database.ref('departments').set(defaults);
         callback(Object.values(defaults));
         return;
       }
@@ -192,7 +162,8 @@ const DB = (() => {
   async function addHistory(storeId, entry) {
     await database.ref(`history/${storeId}`).push({
       ...entry,
-      timestamp: Date.now()
+      actorUid: Auth.getSession()?.uid || null,
+      timestamp: firebase.database.ServerValue.TIMESTAMP
     });
   }
 

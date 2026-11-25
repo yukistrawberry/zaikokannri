@@ -1,0 +1,19 @@
+{
+  "name": "inventory-unified",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node security/build.cjs",
+    "test": "node --test security/tests/*.test.cjs",
+    "test:rules": "firebase emulators:exec --project demo-inventory-security --only auth,database \"node --test security/tests/database.emulator.cjs\"",
+    "test:emulators": "firebase emulators:exec --project demo-inventory-security --only auth,database,functions \"node --test --test-concurrency=1 security/tests/database.emulator.cjs security/tests/functions.emulator.cjs\"",
+    "deploy": "node security/deploy.cjs"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.4.0",
+    "firebase-admin": "14.5.1",
+    "firebase-functions": "7.4.0",
+    "firebase-tools": "15.37.0"
+  }
+}

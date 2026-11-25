@@ -29,16 +29,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let inventoryRef = null;
 
     // Initialize App
-    init();
+    init().catch(() => { showLoginScreen(); });
 
     async function init() {
+        await Auth.ready();
         restoreRememberedStoreId();
 
         session = Auth.getSession();
         if (session && session.role === 'user') {
             showMainScreen();
         } else {
-            if (session && session.role === 'admin') Auth.logout();
+            if (session && session.role === 'admin') await Auth.logout();
             showLoginScreen();
         }
     }
@@ -331,7 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }, 1200);
             } else if (userSession && userSession.role === 'admin') {
-                Auth.logout();
+                await Auth.logout();
                 loginError.textContent = '管理者アカウントです。管理画面（admin.html）をご利用ください。';
                 loginError.classList.remove('hidden');
             } else {
@@ -347,9 +348,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    logoutBtn.addEventListener('click', () => {
+    logoutBtn.addEventListener('click', async () => {
         if (confirm('ログアウトしますか？')) {
-            Auth.logout();
+            await Auth.logout();
             session = null;
             if (inventoryRef) {
                 DB.offInventoryChange(inventoryRef);

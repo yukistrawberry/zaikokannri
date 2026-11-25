@@ -6,20 +6,17 @@
     <meta name="theme-color" content="#ffffff">
     <title>在庫管理 - 店舗スタッフ</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/user.css">
-</head>
+<link rel="stylesheet" href="css/integration.css"><link rel="stylesheet" href="css/shared-ui.css"><link rel="stylesheet" href="css/shared-header.css"></head>
 <body>
     <!-- Login Screen -->
     <div id="login-screen" class="screen">
         <div class="login-wrapper">
             <section class="login-card" aria-labelledby="login-title">
                 <div class="login-header">
-                    <div class="login-logo" aria-hidden="true">🏪</div>
+                    <div class="login-logo"><img src="css/images/header_logo_02.png" alt="じゃんぼ總本店" width="410" height="69"></div>
                     <h1 id="login-title">在庫管理</h1>
                     <p>店舗スタッフ用ログイン</p>
                 </div>
@@ -75,9 +72,8 @@
 
     <!-- Main Screen -->
     <div id="main-screen" class="screen hidden">
-        <header class="app-header">
+        <header class="app-header shared-header">
             <div class="header-left">
-                <div class="header-icon" aria-hidden="true">🏪</div>
                 <div class="header-title-group">
                     <span class="header-label">在庫管理</span>
                     <h1 id="header-store-name">店舗名</h1>
@@ -99,7 +95,7 @@
             </button>
         </header>
 
-        <main class="app-main">
+        <main class="app-main"><nav class="integration-nav" aria-label="在庫管理の切り替え"><span aria-current="page"><strong>毎日在庫</strong></span><a href="monthly.html">月末棚卸に切り替え</a></nav>
             <p class="inventory-guide">
                 倉庫数と使用数を入力すると、残数が自動で更新されます。
             </p>
@@ -123,7 +119,6 @@
                 </div>
 
                 <div id="empty-state" class="empty-state hidden" role="status">
-                    <div class="empty-icon" aria-hidden="true">📦</div>
                     <h2>表示できる商品がありません</h2>
                     <p>別の部門を選択するか、管理者に確認してください。</p>
                 </div>
@@ -144,13 +139,17 @@
     <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
 
     <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <!-- App Scripts -->
-    <script src="js/firebase-config.js"></script>
+    <script src="js/vendor/firebase-app-compat.js"></script>
+<script src="js/vendor/firebase-auth-compat.js"></script>
+<script src="js/vendor/firebase-database-compat.js"></script>
+<script src="js/vendor/firebase-app-check-compat.js"></script>
+<script src="js/runtime-config.js"></script>
+<script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/db.js"></script>
     <script src="js/user-app.js"></script>
 </body>
 </html>
+

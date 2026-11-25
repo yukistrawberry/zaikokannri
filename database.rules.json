@@ -1,0 +1,140 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "access": {
+      ".read": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+    "stores": {
+      ".read": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+      "$storeId": {
+        ".read": "((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || ((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'user' && auth.token.storeId === $storeId)",
+        ".write": false
+      }
+    },
+    "inventory": {
+      ".read": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+      "$storeId": {
+        ".read": "((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || ((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'user' && auth.token.storeId === $storeId)",
+        ".write": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+        "$productId": {
+          ".write": "((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || (((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'user' && auth.token.storeId === $storeId) && data.exists() && newData.exists())",
+          ".validate": "newData.hasChildren(['name','department','warehouse','used']) && (((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || data.exists())",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 160 && (((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || (data.exists() && newData.val() === data.val()))"
+          },
+          "department": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120 && (((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || (data.exists() && newData.val() === data.val()))"
+          },
+          "warehouse": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000000"
+          },
+          "used": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000000"
+          },
+          "updatedAt": {
+            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= now + 300000"
+          },
+          "monthlyTransfer": {
+            ".validate": "newData.hasChildren(['id','sourceId','sourceName','timestamp','previousWarehouse','previousUsed'])",
+            "id": {
+              ".validate": "newData.isString() && newData.val().length <= 100"
+            },
+            "sourceId": {
+              ".validate": "newData.isString() && newData.val().length <= 150"
+            },
+            "sourceName": {
+              ".validate": "newData.isString() && newData.val().length <= 160"
+            },
+            "timestamp": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= now + 300000"
+            },
+            "previousWarehouse": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000000"
+            },
+            "previousUsed": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000000"
+            },
+            "actorUid": {
+              ".validate": "newData.isString() && (newData.val() === auth.uid || newData.val() === data.val())"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "$other": {
+            ".validate": "((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || (data.exists() && newData.val() === data.val())"
+          }
+        }
+      }
+    },
+    "history": {
+      ".read": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+      "$storeId": {
+        ".read": "((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || ((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'user' && auth.token.storeId === $storeId)",
+        ".indexOn": [
+          "timestamp"
+        ],
+        "$entryId": {
+          ".write": "(((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || ((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'user' && auth.token.storeId === $storeId)) && !data.exists() && newData.exists()",
+          ".validate": "newData.hasChildren(['action','timestamp','actorUid']) && newData.child('timestamp').isNumber() && newData.child('timestamp').val() >= now - 60000 && newData.child('timestamp').val() <= now + 60000 && newData.child('actorUid').val() === auth.uid",
+          "action": {
+            ".validate": "newData.isString() && newData.val().length <= 80"
+          },
+          "detail": {
+            ".validate": "newData.isString() && newData.val().length <= 2000"
+          },
+          "productName": {
+            ".validate": "newData.isString() && newData.val().length <= 160"
+          },
+          "changes": {
+            "$index": {
+              ".validate": "$index.matches(/^(0|[1-9][0-9]?|[1-4][0-9][0-9])$/) && newData.hasChildren(['target','warehouse','used'])",
+              "warehouse": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000000"
+              },
+              "used": {
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1000000000"
+              },
+              "$other": {
+                ".validate": "!newData.hasChildren() && (!newData.isString() || newData.val().length <= 500)"
+              }
+            }
+          },
+          "$other": {
+            ".validate": "!newData.hasChildren() && (!newData.isString() || newData.val().length <= 500)"
+          }
+        }
+      }
+    },
+    "departments": {
+      ".read": "auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())",
+      ".write": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+      "$id": {
+        ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+      }
+    },
+    "inventoryTemplates": {
+      ".read": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+      ".write": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'"
+    },
+    "storeTypes": {
+      ".read": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+      ".write": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+      "$storeId": {
+        ".read": "((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || ((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'user' && auth.token.storeId === $storeId)"
+      }
+    },
+    "inventoryTemplateState": {
+      ".read": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+      ".write": "(auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin'",
+      "$storeId": {
+        ".read": "((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'admin') || ((auth != null && root.child('access').child(auth.uid).child('enabled').val() === true && root.child('access').child(auth.uid).child('storeId').val() === auth.token.storeId && root.child('access').child(auth.uid).child('role').val() === auth.token.role && (!root.child('access').child(auth.uid).child('validAfter').exists() || auth.token.auth_time >= root.child('access').child(auth.uid).child('validAfter').val())) && auth.token.role === 'user' && auth.token.storeId === $storeId)"
+      }
+    }
+  }
+}

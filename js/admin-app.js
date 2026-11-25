@@ -22,11 +22,7 @@ async function init() {
         });
     }
 
-    try {
-        await Auth.ensureDefaultAdmin();
-    } catch(e) {
-        console.error("Error ensuring default admin", e);
-    }
+    await Auth.ready();
 
     if (Auth.isLoggedIn() && Auth.isAdmin()) {
         currentSession = Auth.getSession();
@@ -115,7 +111,7 @@ function setupEventListeners() {
         try {
             const session = await Auth.login(storeId, password);
             if(session.role !== 'admin') {
-                Auth.logout();
+                await Auth.logout();
                 errorDiv.textContent = '管理者権限がありません。';
                 errorDiv.style.display = 'block';
                 return;
@@ -130,8 +126,8 @@ function setupEventListeners() {
     });
 
     // Logout
-    document.getElementById('logout-btn').addEventListener('click', () => {
-        Auth.logout();
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+        await Auth.logout();
         currentSession = null;
         if(inventoryRef) { DB.offInventoryChange(inventoryRef); inventoryRef = null; }
         // Clean up history listener if needed (db.js doesn't expose offHistoryChange easily, but we can manage)
@@ -139,6 +135,7 @@ function setupEventListeners() {
     });
 
     // ---- Store Management Events ----
+    document.getElementById('btn-add-store').hidden = true;
     document.getElementById('btn-add-store').addEventListener('click', () => {
         openStoreModal();
     });
@@ -329,8 +326,8 @@ function updateDashboard() {
         const card = document.createElement('div');
         card.className = 'card kpi-card';
         card.innerHTML = `
-            <div class="kpi-title">${store.name} (${store.id})</div>
-            <div class="kpi-value" id="count-${store.id}">...</div>
+            <div class="kpi-title">${SecurityUI.escape(store.name)} (${SecurityUI.escape(store.id)})</div>
+            <div class="kpi-value" id="count-${SecurityUI.escape(store.id)}">...</div>
         `;
         grid.appendChild(card);
         
@@ -353,10 +350,10 @@ function updateDepartmentsTable() {
     Object.entries(allDepartments).forEach(([key, name]) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><code style="background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:4px;">${key}</code></td>
-            <td>${name}</td>
+            <td><code style="background:rgba(255,255,255,0.1);padding:2px 8px;border-radius:4px;">${SecurityUI.escape(key)}</code></td>
+            <td>${SecurityUI.escape(name)}</td>
             <td>
-                <button class="btn btn-icon btn-ghost" style="color:var(--admin-danger);" onclick="confirmDeleteDept('${key}', '${name}')" title="削除"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-icon btn-ghost" style="color:var(--admin-danger);" data-safe-action="delete-dept" data-key="${SecurityUI.escape(key)}" data-name="${SecurityUI.escape(name)}" title="削除"><i class="fas fa-trash"></i></button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -416,14 +413,14 @@ function updateStoresTable() {
         const roleBadge = store.role === 'admin' ? '<span class="badge badge-admin">Admin</span>' : '<span class="badge badge-user">User</span>';
         
         tr.innerHTML = `
-            <td>${store.id}</td>
-            <td>${store.name}</td>
+            <td>${SecurityUI.escape(store.id)}</td>
+            <td>${SecurityUI.escape(store.name)}</td>
             <td class="store-type-cell"></td>
             <td>${roleBadge}</td>
             <td>${dateStr}</td>
             <td>
-                <button class="btn btn-icon btn-ghost" onclick="editStore('${store.id}')" title="編集"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-icon btn-ghost" style="color:var(--admin-danger);" onclick="confirmDeleteStore('${store.id}')" title="削除"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-icon btn-ghost" disabled data-safe-action="edit-store" data-key="${SecurityUI.escape(store.id)}" title="編集"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-icon btn-ghost" style="color:var(--admin-danger);" disabled data-safe-action="delete-store" data-key="${SecurityUI.escape(store.id)}" title="削除"><i class="fas fa-trash"></i></button>
             </td>
         `;
         tbody.appendChild(tr);
@@ -527,18 +524,18 @@ function renderProductsTable() {
         const remaining = DB.getRemaining(p);
         
         tr.innerHTML = `
-            <td>${p.name}</td>
+            <td>${SecurityUI.escape(p.name)}</td>
             <td>
-                <input type="number" class="form-input inline-input" step="${stepWarehouse}" value="${p.warehouse}" 
-                       onchange="updateProductField('${p.key}', 'warehouse', this.value, '${p.name}')">
+                <input type="number" class="form-input inline-input" step="${stepWarehouse}" value="${SecurityUI.escape(p.warehouse)}" 
+                       data-safe-field="warehouse" data-key="${SecurityUI.escape(p.key)}" data-name="${SecurityUI.escape(p.name)}">
             </td>
             <td>
-                <input type="number" class="form-input inline-input" step="${stepUsed}" value="${p.used}" 
-                       onchange="updateProductField('${p.key}', 'used', this.value, '${p.name}')">
+                <input type="number" class="form-input inline-input" step="${stepUsed}" value="${SecurityUI.escape(p.used)}" 
+                       data-safe-field="used" data-key="${SecurityUI.escape(p.key)}" data-name="${SecurityUI.escape(p.name)}">
             </td>
             <td style="font-weight: 600;">${remaining}</td>
             <td>
-                <button class="btn btn-icon btn-ghost" style="color:var(--admin-danger);" onclick="confirmDeleteProduct('${p.key}', '${p.name}')" title="削除">
+                <button class="btn btn-icon btn-ghost" style="color:var(--admin-danger);" data-safe-action="delete-product" data-key="${SecurityUI.escape(p.key)}" data-name="${SecurityUI.escape(p.name)}" title="削除">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
@@ -611,8 +608,8 @@ function loadHistoryForStore(storeId) {
                 <div class="timeline-icon"><i class="fas ${icon}" style="font-size:8px;"></i></div>
                 <div class="timeline-content">
                     <div class="timeline-time">${timeStr}</div>
-                    <div style="font-weight:600; margin-bottom:4px;">${item.productName} [${item.action}]</div>
-                    <div style="font-size:0.9rem; color:var(--admin-text-muted);">${item.detail}</div>
+                    <div style="font-weight:600; margin-bottom:4px;">${SecurityUI.escape(item.productName)} [${SecurityUI.escape(item.action)}]</div>
+                    <div style="font-size:0.9rem; color:var(--admin-text-muted);">${SecurityUI.escape(item.detail)}</div>
                 </div>
             `;
             timeline.appendChild(el);
@@ -650,7 +647,7 @@ function showToast(message, type = 'success') {
     
     toast.innerHTML = `
         <i class="fas ${icon}" style="color:${color}; font-size:1.2rem;"></i>
-        <span>${message}</span>
+        <span>${SecurityUI.escape(message)}</span>
     `;
     
     container.appendChild(toast);

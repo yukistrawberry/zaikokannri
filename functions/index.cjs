@@ -1,0 +1,12 @@
+'use strict';
+const {initializeApp}=require('firebase-admin/app');
+const {getAuth}=require('firebase-admin/auth');
+const {getDatabase}=require('firebase-admin/database');
+const {onCall,HttpsError}=require('firebase-functions/v2/https');
+const {createAccountService}=require('./account-service.cjs');
+const {createMonthlyService}=require('./monthly-service.cjs');
+initializeApp(process.env.FIREBASE_DATABASE_EMULATOR_HOST ? {projectId:process.env.GCLOUD_PROJECT,databaseURL:`https://${process.env.GCLOUD_PROJECT}.firebaseio.com`} : undefined);
+const manage=createAccountService({auth:getAuth(),db:getDatabase(),fail:(code,message)=>new HttpsError(code,message)});
+const options={region:'asia-northeast1',maxInstances:2,timeoutSeconds:60,enforceAppCheck:process.env.FUNCTIONS_EMULATOR!=='true'};
+exports.manageStore=onCall(options,manage);
+exports.applyMonthlyInventory=onCall(options,createMonthlyService({db:getDatabase(),core:require('./transfer-core.cjs'),mappings:require('./sync-mappings.json'),fail:(code,message)=>new HttpsError(code,message)}));
